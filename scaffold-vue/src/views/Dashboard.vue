@@ -274,7 +274,7 @@ onMounted(() => {
           <SectionLabel title="今日操作泳道" />
           <button v-if="operLogPath" type="button" class="pill-btn" @click="router.push(operLogPath)">操作日志 <Icon name="arrowRight" :size="14" /></button>
         </div>
-        <Swimlane v-if="timeline?.lanes.length" :lanes="timeline.lanes" :now-sec="timeline.nowSec" compact :max-lanes="5" @select="openLane($event.lane.module)" />
+        <Swimlane v-if="timeline?.lanes.length" :lanes="timeline.lanes" :now-sec="timeline.nowSec" compact :max-lanes="5" :fixed-lanes="5" :show-hidden-hint="false" @select="openLane($event.lane.module)" />
         <EmptyState v-else title="今天还没有操作记录" icon="clock" />
       </section>
 

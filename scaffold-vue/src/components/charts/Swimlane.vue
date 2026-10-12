@@ -20,11 +20,17 @@ const props = withDefaults(defineProps<{
   compact?: boolean
   maxLanes?: number
   slowMs?: number
+  /** 固定可视泳道行数（超出部分内部滚动）：0 = 随行数自适应高度 */
+  fixedLanes?: number
+  /** 是否显示「另有 N 个模块未显示」截断提示 */
+  showHiddenHint?: boolean
 }>(), {
   nowSec: null,
   compact: false,
   maxLanes: 8,
   slowMs: 1000,
+  fixedLanes: 0,
+  showHiddenHint: true,
 })
 const emit = defineEmits<{ (e: 'select', payload: { lane: SwimlaneLane; block: TimelineBlock }): void }>()
 
@@ -115,7 +121,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <button type="button" class="swim-corner swim-zoom" :aria-pressed="full" :title="full ? '聚焦到有操作的时段' : '查看全天 00:00–24:00'" @click="full = !full">{{ full ? '全天' : '聚焦' }}</button>
       <Ruler :labels="labels" :marker="now === null ? null : frac(now)" :marker-label="compact ? undefined : nowLabel" :minor="compact ? 6 : 3" />
     </div>
-    <div ref="plot" class="swim-body" @pointerleave="hover = null">
+    <div ref="plot" class="swim-body" :style="fixedLanes > 0 ? { height: `calc(var(--lane-h) * ${fixedLanes})`, overflowY: 'auto' } : undefined" @pointerleave="hover = null">
       <div class="swim-grid" :style="{ '--swim-cols': cols }" aria-hidden="true" />
       <div v-for="(lane, li) in shownLanes" :key="lane.module" :class="['swim-lane', `cat-${(li % 5) + 1}`]">
         <div class="swim-label">
@@ -145,7 +151,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
         <span class="swim-tip-row"><span>失败</span><b :class="['tnum', { 'is-red': hover.block.failed }]">{{ hover.block.failed }}</b></span>
         <span class="swim-tip-row"><span>最大耗时</span><b class="tnum">{{ hover.block.maxCost }} ms</b></span>
       </div>
-      <p v-if="hiddenCount" class="swim-more faint">另有 {{ hiddenCount }} 个模块未显示</p>
+      <p v-if="hiddenCount && showHiddenHint" class="swim-more faint">另有 {{ hiddenCount }} 个模块未显示</p>
     </div>
   </div>
 </template>

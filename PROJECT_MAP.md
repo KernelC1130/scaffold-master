@@ -41,6 +41,9 @@
 | 日志查询、导出与清理 | `scaffold-system/src/main/java/com/scaffold/system/controller/MonitorController.java` | `service/SystemManagementService.java` | `mapper/SystemManagementMapper.java`；两类日志 | 已确认 |
 | 日志统计与当日泳道 | 同上 | `service/MonitorStatsService.java` | `mapper/MonitorStatsMapper.java`；两类日志（只读） | 已确认 |
 | 代码生成 | `scaffold-generator/src/main/java/com/scaffold/generator/controller/GeneratorController.java` | `service/GeneratorService.java` | `mapper/GeneratorMapper.java`；`information_schema`、两张生成配置表 | 已确认 |
+| 资产管理（漏洞平台） | `scaffold-vuln/src/main/java/com/scaffold/vuln/controller/VulnAssetController.java` | `service/VulnAssetService.java` | `mapper/VulnAssetMapper.java`；`vuln_asset`（risk_level 由关联漏洞自动计算，删除前校验无关联漏洞） | 已确认 |
+| 漏洞管理（漏洞平台） | `scaffold-vuln/.../controller/VulnVulnerabilityController.java` | `service/VulnVulnerabilityService.java` | `mapper/VulnVulnerabilityMapper.java`；`vuln_vulnerability`（JOIN 资产带展示列；vuln_status 由工单聚合自动计算；删除前校验无工单） | 已确认 |
+| 修复工单（漏洞平台） | `scaffold-vuln/.../controller/VulnRepairTaskController.java` | `service/VulnRepairTaskService.java` | `mapper/VulnRepairTaskMapper.java`；`vuln_repair_task`（状态机 accept/fix/verify/close 语义端点；复测禁自测；联动漏洞状态与资产风险；直查 sys_user 校验人员） | 已确认 |
 | 健康检查 | `scaffold-admin/src/main/java/com/scaffold/admin/controller/HealthController.java` | 无独立业务服务 | 无数据库写入 | 已确认 |
 
 | 前端功能 | 路由 | 页面文件 | API 文件 / 后端模块 | 来源 |
@@ -57,6 +60,9 @@
 | 操作日志（横带：概览 / 趋势或泳道 / 明细，抽屉级联） | `/monitor/oper-log` | `views/monitor/OperLog.vue` | `api/system.ts`；日志与统计 | 已确认 |
 | 登录日志（横带：概览 / 趋势或热力 / 异常 / 明细） | `/monitor/login-log` | `views/monitor/LoginLog.vue` | 同上 + `login-logs/heatmap` | 已确认 |
 | 代码生成（三步流水线抽屉） | `/tool/generator` | `views/tool/Generator.vue` + `components/business/GeneratorPipeline.vue` | `api/portal.ts`；生成器 | 已确认 |
+| 资产管理（漏洞平台样板间） | `/vuln/asset` | `views/vuln/Assets.vue` | `api/vuln.ts`；漏洞平台阶段 0 | 已确认 |
+| 漏洞管理（漏洞平台） | `/vuln/vuln` | `views/vuln/Vulns.vue` | `api/vuln.ts`；详情抽屉含关联工单子表 | 已确认 |
+| 修复工单（漏洞平台） | `/vuln/repair` | `views/vuln/Repairs.vue` | `api/vuln.ts`；状态机快捷按钮 + 复测弹窗 | 已确认 |
 | 无菜单 / 无匹配页面 | `/no-access` / 通配路径 | `views/NoAccess.vue`、`views/NotFound.vue` | 路由与会话状态 | 已确认 |
 
 | 公共能力 | 文件入口 | 用途 |
@@ -148,6 +154,9 @@
 | 角色、菜单、部门、岗位、字典、参数 | `system:role`、`system:menu`、`system:dept`、`system:post`、`system:dict`、`system:config`，后缀 `list/add/edit/remove` | 各模块查询导出与写入操作 |
 | 日志 | `monitor:operlog:list/remove`、`monitor:loginlog:list/remove` | 查询导出 / 删除清理 |
 | 代码生成 | `tool:gen:list` | 当前生成器全部接口 |
+| 资产（漏洞平台） | `vuln:asset:list/add/edit/remove` | 查询导出（详情与导出复用 list）/ 新增 / 编辑 / 删除 |
+| 漏洞（漏洞平台） | `vuln:vulnerability:list/add/edit/remove` | 同上；状态由工单自动计算 |
+| 修复工单（漏洞平台） | `vuln:repair:list/add/edit/remove` | 接单/提交修复/复测/关闭动作复用 edit 权限 |
 
 - 超级管理员角色编码为 `super_admin`，后端操作权限直接放行，菜单按启用和显示状态读取。
 - 业务字典选项仅需已登录；字典管理数据和写入仍使用对应权限。

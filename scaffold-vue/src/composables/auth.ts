@@ -47,6 +47,9 @@ const COMPONENT_MAP: Record<string, () => Promise<{ default: Component }>> = {
   'monitor/operlog/index': () => import('@/views/monitor/OperLog.vue'),
   'monitor/loginlog/index': () => import('@/views/monitor/LoginLog.vue'),
   'tool/gen/index': () => import('@/views/tool/Generator.vue'),
+  'vuln/asset/index': () => import('@/views/vuln/Assets.vue'),
+  'vuln/vuln/index': () => import('@/views/vuln/Vulns.vue'),
+  'vuln/repair/index': () => import('@/views/vuln/Repairs.vue'),
 }
 
 /** 路由名由路径推导：/system/user → system-user */

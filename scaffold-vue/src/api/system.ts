@@ -249,7 +249,7 @@ export function createSystemApi(client: HttpClient) {
   }
 }
 
-function crudPage<Row, WriteBody>(client: HttpClient, path: string) {
+export function crudPage<Row, WriteBody>(client: HttpClient, path: string) {
   return {
     list: (query?: QueryParams) => client.get<PageResult<Row>>(path, query),
     create: (body: WriteBody) => client.post<IdResponse>(path, body),

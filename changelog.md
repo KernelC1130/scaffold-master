@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-10-12（漏洞管理业务模块 · 阶段 1 全量迁移完成）
+
+- 漏洞域后端：`VulnVulnerabilityRow` / `VulnerabilityWriteRequest` / `VulnVulnerabilityMapper`（LEFT JOIN 资产带 IP/名称展示列，同名列全部带 v./a. 前缀）/ `VulnVulnerabilityService`（CVE 正则校验、发现日期不晚于今天、删除前锁行校验无工单、归属变更时新旧资产都重算风险）/ `VulnVulnerabilityController`（/api/vuln/vulnerabilities）。
+- 工单域后端：`VulnRepairTaskRow`（三表 JOIN + sys_user 两次取昵称）/ `TaskWriteRequest` / `TaskActionRequest` / `VulnRepairTaskMapper` / `VulnRepairTaskService` / `VulnRepairTaskController`。状态机 0→1→2→{3|1}→4 走语义化动作端点（accept/fix/verify/close），接单与提交修复限负责人本人或有编辑权限，复测禁止负责人本人（复测独立性），验证意见必填，提交修复清空上轮验证意见与验证人，实际完成时间在状态 2/3 必填。
+- 状态联动：每次工单变化后按聚合（全待处理→新发现；全关闭→已关闭；有待/处理中→修复中；有已修复/已验证→已修复）重算漏洞状态，并联动资产风险（未关闭漏洞最高风险，无则归低）；漏洞归属变化时新旧资产都重算。
+- 跨模块解耦：不依赖 scaffold-system，工单校验负责人/验证人、登录名→用户 ID 均直查 sys_user（注解 SQL）。
+- 菜单放开：V3 脚本解除 402/403 段注释并重放（漏洞管理页 alert 图标、修复工单页 board 图标，各 3 个按钮），权限码 vuln:vulnerability:* / vuln:repair:*。
+- 前端：`api/vuln.ts` 扩展（vulnerabilities + repairTasks + 四个动作端点）、`views/vuln/Vulns.vue`（资产下拉、状态列由工单自动计算）、`views/vuln/Repairs.vue`（UserSelect 选负责人、按当前状态渲染接单/修复/复测/关闭快捷按钮、复测弹窗 Segmented 通过/打回切换）、COMPONENT_MAP 登记。
+- 详情三级穿透：复用底座 Drawer 组件——资产详情抽屉（kv 网格 + 关联漏洞子卡）、漏洞详情抽屉（+ 修复工单子卡，含状态/优先级/验证意见留痕），眼睛按钮触发，origin-from 从行生长。
+- 工作台泳道两处小改：`Swimlane` 新增 `fixedLanes`（固定可视行数，超出内部滚动）与 `showHiddenHint`（截断提示开关），Dashboard 固定 5 行并关闭提示——修正行数多时卡片高度跳变与溢出。
+- 验证：编译通过；E2E 接口实测——状态机全路径与顺序校验、自复测拒绝、验证意见必填、打回→再修复→复测通过→关闭闭环、漏洞状态与资产风险全程联动（close 后 2/2 → 3/0）、删除保护链；浏览器端三个菜单 + 抽屉交互可用。sys_admin 角色经 SQL 授权漏洞菜单用于双账号复测（界面可配置）。
+
+## 2026-10-12（漏洞管理业务模块接入 · 阶段 0 样板间）
+
+- 新增 Maven 业务模块 `scaffold-vuln`（迁移自 RuoYi 版漏洞平台 Vulnerability-Manager）：根 pom `modules` 与 `dependencyManagement` 登记、`scaffold-admin` 显式依赖打包、启动类 `@MapperScan` 增加 `com.scaffold.vuln.mapper`。
+- 新增迁移脚本 `scaffold-system/sql/V3__vuln_module.sql`：业务表 `vuln_asset` / `vuln_vulnerability` / `vuln_repair_task`（含四审计字段与索引，risk_level / vuln_status 为自动计算列）、菜单（漏洞管理 dir + 资产管理 menu + 3 按钮，sort 重排为工作台 1 / 漏洞管理 2 / 系统管理 3 / 监控 4 / 工具 5）、业务字典 5 组 18 条（tone 对齐前端 Tag 现有四档）。
+- 资产域完整闭环作为范式样板：`VulnAssetRow` / `AssetWriteRequest` / `VulnAssetMapper`（注解 SQL + `<script>` 动态条件 + 手写分页两条 SQL）/ `VulnAssetService`（IPv4 校验、新建强制 riskLevel='0'、删除前 FOR UPDATE 锁行并校验无关联漏洞、CSV 导出）/ `VulnAssetController`（`/api/vuln/assets` RESTful，`@RequiresPermission` + `@OperLog`）。
+- 前端新增 `api/vuln.ts`（`crudPage` + 导出）、`views/vuln/Assets.vue`（ListPage + DictSelect + FormDialog + PermissionButton 全复用）、`COMPONENT_MAP` 登记 `vuln/asset/index`；菜单/权限码约定 `vuln:asset:list/add/edit/remove`，导出与详情复用 list。
+- 漏洞管理页与修复工单页菜单 SQL 预留注释，阶段 1 放开；AI 助手与 harmonyOS 演示页确认不迁移。
+- 验证：后端 `mvn package` 通过；接口实测登录 → 新增 → 列表 → 详情 → 修改 → 删除全 200，非法 IP / 空必填 / 删不存在均 400 返回中文业务消息；未认证请求 401。
+
 ## 2026-10-11（MIT 开源发布）
 
 - 以当前代码建立独立的公开版本快照，采用 MIT License；第三方依赖保留各自许可，README 单独说明 GSAP 许可。
