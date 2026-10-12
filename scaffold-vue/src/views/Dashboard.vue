@@ -13,7 +13,7 @@ import TrendChart from '@/components/charts/TrendChart.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import TickRing from '@/components/charts/TickRing.vue'
 import Swimlane from '@/components/charts/Swimlane.vue'
-import { portalApi, systemApi, type DashboardSummary, type OperTimeline } from '@/api'
+import { portalApi, systemApi, vulnApi, type DashboardSummary, type OperTimeline } from '@/api'
 import { currentUser, navGroups, pathOf } from '@/composables/auth'
 import { toastError } from '@/composables/toast'
 import { EASE, firstTimeInSession, gsap, motionSkipped, trackGlow } from '@/composables/motion'
@@ -91,6 +91,7 @@ const scopeItems = computed(() => {
 const loginLogPath = computed(() => pathOf('monitor/loginlog/index'))
 const operLogPath = computed(() => pathOf('monitor/operlog/index'))
 const canTimeline = computed(() => Boolean(operLogPath.value) && hasPermission('monitor:operlog:list'))
+const canVuln = computed(() => hasPermission('vuln:vulnerability:list'))
 const shortcuts = computed(() => navGroups.value
   .filter(g => !g.single)
   .flatMap(g => g.items.map(i => ({ ...i, group: g.label })))
@@ -113,6 +114,35 @@ async function loadTimeline() {
     timeline.value = await systemApi.operLogs.timeline()
   } catch {
     timeline.value = null
+  }
+}
+
+/* ── 安全态势（漏洞平台）：统计接口无权限或失败时静默隐藏整块 ── */
+const vulnSummary = ref<{ totalAssets: number; openVulns: number; highRiskOpen: number; weekTasks: number } | null>(null)
+const vulnMonthly = ref<Array<{ name: string; value: number }>>([])
+const vulnRiskRaw = ref<Array<{ name: string; value: number }>>([])
+const vulnTop = ref<Array<{ name: string; value: number }>>([])
+const riskLabels = ['低', '中', '高']
+const riskValues = computed(() => riskLabels.map(l => vulnRiskRaw.value.find(i => i.name === l)?.value ?? 0))
+const topTotal = computed(() => vulnTop.value.reduce((a, b) => a + b.value, 0) || 1)
+const topItems = computed(() => vulnTop.value.map((i, k) => ({ ...i, w: (i.value / Math.max(1, ...vulnTop.value.map(x => x.value))) * 100, pct: Math.round((i.value / topTotal.value) * 100), cat: (k % 5) + 1 })))
+const pageDesc = computed(() => canVuln.value ? '安全态势、系统运行概况与今日操作轨迹。' : '系统运行概况、登录脉搏与今日操作轨迹。')
+
+async function loadVuln() {
+  if (!canVuln.value) return
+  try {
+    const [s, monthly, risk, top] = await Promise.all([
+      vulnApi.statistics.summary(),
+      vulnApi.statistics.vulnByMonth(),
+      vulnApi.statistics.vulnByRiskLevel(),
+      vulnApi.statistics.topRiskAssets(),
+    ])
+    vulnSummary.value = s
+    vulnMonthly.value = monthly
+    vulnRiskRaw.value = risk
+    vulnTop.value = top
+  } catch {
+    /* 态势区块失败不影响工作台其余部分 */
   }
 }
 
@@ -156,6 +186,7 @@ watch(range, load)
 onMounted(() => {
   load()
   loadTimeline()
+  loadVuln()
   playEntrance()
 })
 </script>
@@ -166,11 +197,79 @@ onMounted(() => {
       <div class="page-head-main">
         <span class="page-date">{{ dateStamp }}</span>
         <h1 class="page-title">{{ greeting }}，{{ currentUser?.nickname }}</h1>
-        <p class="page-desc">系统运行概况、登录脉搏与今日操作轨迹。</p>
+        <p class="page-desc">{{ pageDesc }}</p>
       </div>
     </header>
 
-    <div ref="grid" class="bento-grid">
+    <!-- 安全态势（漏洞平台）：置顶主位，无漏洞菜单权限时整块隐藏 -->
+    <div v-if="canVuln" ref="grid" class="bento-grid">
+      <section class="bento bento-side">
+        <div class="side-top">
+          <span class="side-label">资产总数</span>
+          <span class="side-ico m-groove"><Icon name="database" :size="16" /></span>
+        </div>
+        <Metric :value="vulnSummary?.totalAssets" unit="台" size="l" />
+        <div class="side-foot"><span class="muted">纳管资产</span></div>
+      </section>
+      <section class="bento bento-side">
+        <div class="side-top">
+          <span class="side-label">未闭合漏洞</span>
+          <span class="side-ico m-groove"><Icon name="alert" :size="16" /></span>
+        </div>
+        <Metric :value="vulnSummary?.openVulns" unit="个" size="l" />
+        <div class="side-foot"><span class="muted">新发现 + 修复中</span></div>
+      </section>
+      <section class="bento bento-side">
+        <div class="side-top">
+          <span class="side-label">高风险未闭合</span>
+          <span class="side-ico m-groove"><Icon name="ban" :size="16" /></span>
+        </div>
+        <Metric :value="vulnSummary?.highRiskOpen" unit="个" size="l" />
+        <div class="side-foot"><span class="muted">风险敞口</span></div>
+      </section>
+      <section class="bento bento-side">
+        <div class="side-top">
+          <span class="side-label">本周新工单</span>
+          <span class="side-ico m-groove"><Icon name="board" :size="16" /></span>
+        </div>
+        <Metric :value="vulnSummary?.weekTasks" unit="单" size="l" />
+        <div class="side-foot"><span class="muted">近 7 天</span></div>
+      </section>
+
+      <section class="bento bento-third">
+        <div class="bento-head">
+          <SectionLabel title="漏洞发现趋势" />
+          <span class="bento-meta">按月</span>
+        </div>
+        <TrendChart v-if="vulnMonthly.length" :values="vulnMonthly.map(i => i.value)" :labels="vulnMonthly.map(i => i.name)" :height="132" unit=" 个" tone="blue" />
+        <EmptyState v-else title="暂无漏洞数据" icon="chart" />
+      </section>
+
+      <section class="bento bento-third">
+        <div class="bento-head">
+          <SectionLabel title="风险等级分布" />
+          <span class="bento-meta">全部漏洞</span>
+        </div>
+        <BarChart :values="riskValues" :labels="riskLabels" :highlight="riskValues.length ? riskValues.length - 1 : null" unit=" 个" />
+      </section>
+
+      <section class="bento bento-third">
+        <div class="bento-head">
+          <SectionLabel title="高危资产 TOP5" />
+          <span class="bento-meta">按高危漏洞数</span>
+        </div>
+        <ul v-if="topItems.length" class="share-list">
+          <li v-for="item in topItems" :key="item.name" :class="`cat-${item.cat}`">
+            <span class="share-label">{{ item.name }}</span>
+            <span class="share-track"><i :style="{ width: `${item.w}%` }" /></span>
+            <span class="share-value tnum">{{ item.value }}<small> 个 · {{ item.pct }}%</small></span>
+          </li>
+        </ul>
+        <EmptyState v-else title="暂无高风险漏洞" icon="check" />
+      </section>
+    </div>
+
+    <div ref="grid" v-else class="bento-grid">
       <!-- 01 主卡：登录脉搏 -->
       <section class="bento bento-hero m-glow" @pointermove="trackGlow">
         <span class="glow-layer" aria-hidden="true" />

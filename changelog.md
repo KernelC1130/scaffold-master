@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-12（漏洞管理业务模块 · 阶段 4 部署上线 www.liaoym.cloud）
+
+- 部署方式：本地构建直传（无 CI）——后端 `mvn package` 出 fat jar scp 至 /opt/scaffold-vuln/，前端 `npm run build` 出 dist 至 /var/www/vuln；systemd 服务 `deploy/scaffold-vuln.service`（端口 6061，-Xmx320m，独立 JWT_SECRET 环境变量）。
+- 数据迁移：服务器 `V4__real_migrate.sql`（deploy/ 留档）——账号体系从 vuln_manager(RuoYi) 重建：6 个真实用户（密码哈希直搬，登录密码不变）、部门「老九门专业团队」、角色保留 super_admin + 新增 vuln_member（授权漏洞全菜单，lym 与 admin 同为超管）；test 演示账号不迁；业务三表跨库原样搬（资产 25 / 漏洞 37 / 工单 9），用户 id 沿用旧库故 handler/verifier 无需映射，test 名下 5 条工单归 admin。
+- nginx：ruoyi-vuln.conf 改写（旧版备份 .bak-1012）——root 换 /var/www/vuln，新增 /api/ 原样透传 6061，/prod-api/ 与 /profile/ 一律 404；80 段 certbot + 301 保留。
+- 旧服务下线：ruoyi-vuln stop + disable（jar 与 service 文件原地保留，回滚 = nginx 还原备份 + systemctl start ruoyi-vuln）；可用内存 558Mi → 852Mi。
+- 探测脚本联动（portal-design 仓库 e1a07cf）：www 探测改 /api/health，vuln 色谱直连库改 scaffold_system。
+- 组件修正：TextInput 的 type 扩展 date / datetime-local / time / month / url / search（HTML 原生类型，业务表单日期控件所需）。
+- 验证：公网 https://www.liaoym.cloud 前端 200、/api/health UP、验证码接口 200；探测 www up 18ms，vuln 色谱数据从新库聚合正常（high 16 / med 13 / low 8 / assets 25）。
+
+## 2026-10-12（漏洞管理业务模块 · 阶段 2 工作台安全态势）
+
+- 后端统计域：`VulnStatisticsMapper` / `VulnStatisticsService` / `VulnStatisticsController`（/api/vuln/statistics/*，只读聚合）：summary 指标（总资产 / 未闭合漏洞=新发现+修复中 / 高风险未闭合 / 本周新工单）、风险等级分布、按月发现趋势、高危资产 TOP5（按高危漏洞计数）。权限复用 `vuln:vulnerability:list`。
+- 工作台改造：`Dashboard.vue` 新增「安全态势」置顶区块——4 张 Metric 指标卡（database/alert/ban/board 图标）+ 漏洞发现趋势 TrendChart（tone=blue）+ 风险等级分布 BarChart（低/中/高补零对齐）+ 高危资产 TOP5（复用 share-list 占比条样式），全部复用 bento 栅格零新增样式；无 `vuln:vulnerability:list` 权限时整块隐藏，统计接口失败静默降级；副标题随权限切换。
+- 数据迁移佐证：E2E 与样板数据清理后，工作台态势数据随库实时聚合。
+- 验证：后端 package 通过；前端 Vite 热更编译通过（浏览器端待重启后端后验收）。
+
 ## 2026-10-12（漏洞管理业务模块 · 阶段 1 全量迁移完成）
 
 - 漏洞域后端：`VulnVulnerabilityRow` / `VulnerabilityWriteRequest` / `VulnVulnerabilityMapper`（LEFT JOIN 资产带 IP/名称展示列，同名列全部带 v./a. 前缀）/ `VulnVulnerabilityService`（CVE 正则校验、发现日期不晚于今天、删除前锁行校验无工单、归属变更时新旧资产都重算风险）/ `VulnVulnerabilityController`（/api/vuln/vulnerabilities）。

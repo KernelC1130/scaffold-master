@@ -104,6 +104,12 @@ export function createVulnApi(client: HttpClient) {
       verify: (id: number, body: TaskActionRequest) => client.post<void>(`/vuln/repair-tasks/${id}/verify`, body),
       close: (id: number) => client.post<void>(`/vuln/repair-tasks/${id}/close`),
     },
+    statistics: {
+      summary: () => client.get<{ totalAssets: number; openVulns: number; highRiskOpen: number; weekTasks: number }>('/vuln/statistics/summary'),
+      vulnByRiskLevel: () => client.get<Array<{ name: string; value: number }>>('/vuln/statistics/vulnByRiskLevel'),
+      vulnByMonth: () => client.get<Array<{ name: string; value: number }>>('/vuln/statistics/vulnByMonth'),
+      topRiskAssets: () => client.get<Array<{ name: string; value: number }>>('/vuln/statistics/topRiskAssets'),
+    },
   }
 }
 

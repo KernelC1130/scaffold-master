@@ -1,0 +1,23 @@
+[Unit]
+Description=漏洞管理平台后端（scaffold 版）
+After=network.target mysql.service redis-server.service
+
+[Service]
+User=ubuntu
+WorkingDirectory=/opt/scaffold-vuln
+Environment=JWT_SECRET=prod_8d3f2a91c74e5b60f1a9d2c8e47b3056fa19c8e2d7b46305a9f1c8e2d7b46305
+Environment=DB_HOST=127.0.0.1
+Environment=DB_PORT=3306
+Environment=DB_NAME=scaffold_system
+Environment=DB_USERNAME=root
+Environment=DB_PASSWORD=root
+Environment=DB_TIMEZONE=+08:00
+Environment=REDIS_HOST=127.0.0.1
+Environment=REDIS_PORT=6379
+Environment=SERVER_PORT=6061
+ExecStart=/usr/bin/java -Xms128m -Xmx320m -jar /opt/scaffold-vuln/scaffold-admin.jar
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

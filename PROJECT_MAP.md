@@ -44,6 +44,7 @@
 | 资产管理（漏洞平台） | `scaffold-vuln/src/main/java/com/scaffold/vuln/controller/VulnAssetController.java` | `service/VulnAssetService.java` | `mapper/VulnAssetMapper.java`；`vuln_asset`（risk_level 由关联漏洞自动计算，删除前校验无关联漏洞） | 已确认 |
 | 漏洞管理（漏洞平台） | `scaffold-vuln/.../controller/VulnVulnerabilityController.java` | `service/VulnVulnerabilityService.java` | `mapper/VulnVulnerabilityMapper.java`；`vuln_vulnerability`（JOIN 资产带展示列；vuln_status 由工单聚合自动计算；删除前校验无工单） | 已确认 |
 | 修复工单（漏洞平台） | `scaffold-vuln/.../controller/VulnRepairTaskController.java` | `service/VulnRepairTaskService.java` | `mapper/VulnRepairTaskMapper.java`；`vuln_repair_task`（状态机 accept/fix/verify/close 语义端点；复测禁自测；联动漏洞状态与资产风险；直查 sys_user 校验人员） | 已确认 |
+| 工作台安全态势（漏洞平台） | `scaffold-vuln/.../controller/VulnStatisticsController.java` | `service/VulnStatisticsService.java` | `mapper/VulnStatisticsMapper.java`；只读聚合（summary / 风险分布 / 月度趋势 / TOP5），Dashboard 置顶展示 | 已确认 |
 | 健康检查 | `scaffold-admin/src/main/java/com/scaffold/admin/controller/HealthController.java` | 无独立业务服务 | 无数据库写入 | 已确认 |
 
 | 前端功能 | 路由 | 页面文件 | API 文件 / 后端模块 | 来源 |
