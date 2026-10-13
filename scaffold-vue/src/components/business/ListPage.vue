@@ -24,6 +24,8 @@ const props = withDefaults(defineProps<{
   selectable?: boolean
   rowKey?: string
   minWidth?: number
+  /** 填满工作区，固定查询区和分页，仅表格数据区滚动；窄屏或低窗口回退为整页滚动。 */
+  fitViewport?: boolean
   /** 为 true 时用 #alt 插槽（画布、看板、矩阵等版式）替换查询区与表格 */
   altView?: boolean
 }>(), {
@@ -42,7 +44,7 @@ function clearSelection() {
 </script>
 
 <template>
-  <div class="page">
+  <div class="page list-page" :class="{ 'is-fit-viewport': fitViewport && !altView }">
     <PageHeader :title="title" :desc="desc">
       <template v-if="$slots.spec" #spec><slot name="spec" /></template>
       <slot name="actions" />
@@ -52,14 +54,21 @@ function clearSelection() {
     <slot name="before" />
 
     <div v-if="altView" class="alt-view reveal"><slot name="alt" /></div>
-    <div v-else :class="$slots.side ? 'split' : undefined">
+    <div v-else class="list-page-body" :class="{ split: $slots.side }">
       <aside v-if="$slots.side" class="split-side m-surface reveal"><slot name="side" /></aside>
-      <div class="stack">
+      <div class="stack list-page-stack">
         <SearchForm v-if="$slots.search" :loading="list.loading.value" @search="list.search()" @reset="list.reset()">
           <slot name="search" :query="list.query" />
         </SearchForm>
 
-        <Panel class="reveal" :title="tableTitle" :meta="`共 ${list.total.value} 条`">
+        <Panel class="reveal list-page-panel" :title="tableTitle" :meta="`共 ${list.total.value} 条`">
+          <template v-if="fitViewport && selectable && list.selected.value.length" #head>
+            <div class="list-selection" role="region" aria-label="批量操作">
+              <span>已选 <b class="tnum">{{ list.selected.value.length }}</b> 项</span>
+              <slot name="batch" :ids="list.selected.value" />
+              <Button variant="text" size="sm" @click="clearSelection">取消选择</Button>
+            </div>
+          </template>
           <template #tools>
             <slot name="tools" />
             <template v-if="isTree">
@@ -81,6 +90,8 @@ function clearSelection() {
             :row-key="rowKey"
             :min-width="minWidth"
             :tree="isTree"
+            :scrollable="fitViewport"
+            :aria-label="fitViewport ? tableTitle : undefined"
           >
             <template v-for="name in cellSlots" :key="name" #[name]="scope">
               <slot :name="name" v-bind="scope" />
@@ -102,7 +113,7 @@ function clearSelection() {
     <!-- 批量操作浮条：勾选后从底部升起（放 Discharge），#batch 插槽 API 不变 -->
     <Teleport to="body">
       <Transition :css="false" @enter="floatBarEnter" @leave="floatBarLeave">
-        <div v-if="selectable && list.selected.value.length" class="float-bar" role="region" aria-label="批量操作">
+        <div v-if="selectable && list.selected.value.length && (!fitViewport || altView)" class="float-bar" role="region" aria-label="批量操作">
           <span class="float-bar-count">已选 <b class="tnum">{{ list.selected.value.length }}</b> 项</span>
           <span class="float-bar-sep" aria-hidden="true" />
           <slot name="batch" :ids="list.selected.value" />

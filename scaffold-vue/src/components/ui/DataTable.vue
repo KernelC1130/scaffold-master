@@ -27,6 +27,8 @@ const props = withDefaults(defineProps<{
   /** 树形表格默认展开到第几层（0 = 全部收起） */
   expandDepth?: number
   minWidth?: number
+  /** 由父容器分配可用高度，表头吸顶，横纵滚动限制在数据区。 */
+  scrollable?: boolean
 }>(), {
   rowKey: 'id',
   selected: () => [],
@@ -40,6 +42,7 @@ const emit = defineEmits<{
 }>()
 
 const body = ref<HTMLElement | null>(null)
+const viewport = ref<HTMLElement | null>(null)
 const expanded = ref(new Set<string | number>())
 
 interface FlatRow { row: Row; depth: number; hasChildren: boolean }
@@ -95,6 +98,8 @@ function collapseAll() { expanded.value = new Set() }
 let initialized = false
 let lastSignature = ''
 watch(() => props.data, (rows) => {
+  // 查询、翻页、刷新后的新结果从首行展示，保留横向阅读位置。
+  if (props.scrollable && viewport.value) viewport.value.scrollTop = 0
   if (props.tree && !initialized && rows.length) {
     expanded.value = collectKeys(rows, props.expandDepth)
     initialized = true
@@ -118,7 +123,7 @@ defineExpose({ expandAll, collapseAll })
 </script>
 
 <template>
-  <div class="table-wrap">
+  <div ref="viewport" class="table-wrap" :class="{ 'is-scrollable': scrollable }" :tabindex="scrollable ? 0 : undefined" :role="scrollable ? 'region' : undefined">
     <table class="table" :style="minWidth ? { minWidth: `${minWidth}px` } : undefined" :aria-busy="loading">
       <thead>
         <tr>

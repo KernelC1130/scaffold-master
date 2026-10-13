@@ -115,7 +115,7 @@ watch(detail, async (row) => {
 </script>
 
 <template>
-  <ListPage title="资产管理" desc="登记纳管的资产（IP 与服务），风险等级由关联漏洞自动计算。" table-title="资产列表" :list="list" :columns="columns" selectable>
+  <ListPage title="资产管理" desc="登记纳管的资产（IP 与服务），风险等级由关联漏洞自动计算。" table-title="资产列表" :list="list" :columns="columns" selectable fit-viewport>
     <template #actions>
       <PermissionButton perm="vuln:asset:add" variant="primary" icon="plus" @click="openCreate">新增资产</PermissionButton>
     </template>

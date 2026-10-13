@@ -68,7 +68,7 @@
 
 | 公共能力 | 文件入口 | 用途 |
 | --- | --- | --- |
-| 列表模板与数据状态 | `components/business/ListPage.vue`、`composables/list.ts` | 查询、重置、分页、导出、勾选、底部批量浮条及树列表；`altView` + `#alt` 换成画布 / 看板 / 矩阵 |
+| 列表模板与数据状态 | `components/business/ListPage.vue`、`components/ui/DataTable.vue`、`composables/list.ts` | 查询、重置、分页、导出、勾选及树列表；`fitViewport`（填满可视工作区）由资产、漏洞、修复工单页启用，固定查询与分页、表格内部滚动，`DataTable.scrollable`（可滚动数据区）保留吸顶表头并在数据刷新后回到首行，批量操作置于面板工具栏；窄屏 / 低窗口自然滚动。其他列表保留底部批量浮条；`altView` + `#alt` 换成画布 / 看板 / 矩阵 |
 | 版式组件 | `components/business/OrgCanvas.vue`、`BoardView.vue`、`PermissionMatrix.vue`、`PostLadder.vue`、`PermissionTrace.vue`、`MenuStarMap.vue`、`DictSwatchbook.vue`、`GeneratorPipeline.vue`、`composables/view.ts` | 组织画布、看板分列（拖拽 + 键盘移动）、角色权限矩阵、岗位阶梯、权限溯源（三层下钻）、导航星系（三层下钻）、字典样本册、生成流水线、按页面记忆视图 |
 | 图谱与问答 | `components/charts/RelationGraph.vue`、`composables/neural.ts`、`components/business/InsightPanel.vue`、`AskDock.vue`、`composables/ask.ts`、`composables/viewport.ts`、`components/NeuralNet.vue` | 通用关系图（弹簧布局变形、脉冲、扇形触须；`variant="stage"` 为珍珠玻璃图谱舞台）、舞台 Canvas 绘制件（珍珠球、玻璃刻度表盘、连线与脉冲、背景网络、轨道、台阶光柱）、分析栏、问答坞、本地规则问答引擎、共享视口平移缩放、登录神经网络背景 |
 | 仪器化组件 | `components/ui/Metric.vue`、`Odometer.vue`、`SectionLabel.vue`、`SpecPlate.vue`、`DeltaPill.vue`、`Ruler.vue`、`HoverCard.vue` | 显示级读数、逐位滚动、编号眉标、规格铭牌、环比、刻度尺、悬停名片 |

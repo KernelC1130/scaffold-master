@@ -344,6 +344,12 @@
 
 /* ── 数据表格 ───────────────────────────────────────────────── */
 .table-wrap { position: relative; overflow-x: auto; overflow-y: clip; }
+.table-wrap.is-scrollable { min-height: 0; overflow: auto; scrollbar-gutter: stable; }
+.table-wrap.is-scrollable:focus-visible { outline-offset: -2px; }
+.table-wrap.is-scrollable .table { border-collapse: separate; }
+/* 吸顶表头始终盖住右侧吸附的操作单元格，交叉处位于最上层。 */
+.table-wrap.is-scrollable .table th { z-index: 3; }
+.table-wrap.is-scrollable .table th.col-actions { z-index: 4; }
 .table {
   width: 100%;
   min-width: 720px;

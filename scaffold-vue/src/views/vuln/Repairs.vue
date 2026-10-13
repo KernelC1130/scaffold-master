@@ -195,7 +195,7 @@ async function batchRemove(ids: (string | number)[]) {
 </script>
 
 <template>
-  <ListPage title="修复工单" desc="漏洞修复流转：接单 → 提交修复 → 复测（通过/打回）→ 关闭，漏洞状态随之自动计算。" table-title="工单列表" :list="list" :columns="columns" selectable>
+  <ListPage title="修复工单" desc="漏洞修复流转：接单 → 提交修复 → 复测（通过/打回）→ 关闭，漏洞状态随之自动计算。" table-title="工单列表" :list="list" :columns="columns" selectable fit-viewport>
     <template #actions>
       <PermissionButton perm="vuln:repair:add" variant="primary" icon="plus" @click="openCreate">新建工单</PermissionButton>
     </template>

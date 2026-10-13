@@ -138,12 +138,12 @@ export function pageEnter(el: Element, done: () => void) {
   const cards = page.querySelectorAll('.bento')
   // 隐藏态写在时间轴开头的 set 里，内部只用 to 推进
   gsap.set(page, { opacity: 1, scale: 0.994 })
-  gsap.set(items, { opacity: 0, y: 12 })
-  gsap.set(cards, { opacity: 0, y: 18 })
+  if (items.length) gsap.set(items, { opacity: 0, y: 12 })
+  if (cards.length) gsap.set(cards, { opacity: 0, y: 18 })
   page.classList.add('is-entrance-ready')
   const tl = gsap.timeline({ onComplete: () => { gsap.set(page, { clearProps: 'transform' }); done() } })
   tl.to(page, { scale: 1, duration: DUR.pageIn, ease: EASE.glide }, 0)
-  tl.to(items, { opacity: 1, y: 0, duration: DUR.pageIn, ease: EASE.reveal, stagger: { each: 0.05, from: 'start' }, clearProps: 'transform' }, 0.04)
+  if (items.length) tl.to(items, { opacity: 1, y: 0, duration: DUR.pageIn, ease: EASE.reveal, stagger: { each: 0.05, from: 'start' }, clearProps: 'transform' }, 0.04)
   // 并列卡片从中间向两侧展开
   if (cards.length) tl.to(cards, { opacity: 1, y: 0, duration: 0.72, ease: EASE.reveal, stagger: { each: 0.045, from: 'center' }, clearProps: 'opacity,transform' }, 0.1)
 }
