@@ -236,8 +236,10 @@ async function remove(row: ConfigRow) {
                 <Switch v-else-if="item.kind.kind === 'boolean'" :model-value="valueOf(item.row) === 'true'" :label="valueOf(item.row) === 'true' ? '开启' : '关闭'" @update:model-value="setValue(item.row, $event)" />
                 <Segmented v-else-if="item.kind.kind === 'choice'" :model-value="valueOf(item.row)" :label="item.title" :options="item.kind.options.map(o => ({ label: CHOICE_LABEL[o] ?? o, value: o }))" @update:model-value="setValue(item.row, $event)" />
                 <TextInput v-else-if="item.kind.kind === 'number'" class="settings-number" type="number" :model-value="valueOf(item.row)" @update:model-value="setValue(item.row, $event)" />
-                <TextInput v-else :type="item.kind.kind === 'secret' && !revealed.has(item.row.id) ? 'password' : 'text'" :model-value="valueOf(item.row)" :invalid="invalid.includes(item.row.id)" autocomplete="off" @update:model-value="setValue(item.row, $event)" />
-                <IconButton v-if="!item.locked && item.kind.kind === 'secret'" name="eye" :label="revealed.has(item.row.id) ? '隐藏参数值' : '显示参数值'" small @click="toggleReveal(item.row.id)" />
+                <div v-else class="settings-secret">
+                  <TextInput :type="item.kind.kind === 'secret' && !revealed.has(item.row.id) ? 'password' : 'text'" :model-value="valueOf(item.row)" :invalid="invalid.includes(item.row.id)" autocomplete="off" @update:model-value="setValue(item.row, $event)" />
+                  <IconButton v-if="!item.locked && item.kind.kind === 'secret'" name="eye" :label="revealed.has(item.row.id) ? '隐藏参数值' : '显示参数值'" small class="settings-eye" @click="toggleReveal(item.row.id)" />
+                </div>
               </div>
               <div v-if="item.row.id in drafts" class="settings-was">
                 <span>原值 <s class="mono">{{ displayValue(item, item.row.value) }}</s></span>
