@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-14（参数配置页：secret 行等宽 + 分组名中文化）
+
+- 修复 secret 行输入框被眼睛按钮挤窄导致各行长短不齐：眼睛按钮改为绝对定位浮在输入框右内缘（input 加右 padding 腾位），全部行输入框等宽。分组名中文化：sys_config 八条 AI/天气配置的 config_name 改为「前缀-标题」格式（AI 模型服务 / 向量模型服务 / 天气服务），splitConfigName 自动按首连字符分组，零代码改动。均已部署。
+
 ## 2026-10-14（AI 迁移预备：API Key 脱敏两处漏点）
 
 - AI 服务配置迁入 sys_config（复用参数配置页，键 ai.model.* / ai.embedding.* / weather.*，用户完成）。审计发现两层识别清单没跟上 `api-key`（连字符）键名：前端 `configValue.ts` 的 SECRET 正则与后端 `OperationLogAspect.isSensitive` 均只认 `apikey/api_key`——页面明文显示 + 改配置时 key 明文进 sys_oper_log。两处正则统一补 `api[-_]key`，前端部署 + 后端 jar 部署（备份 .bak-1014-secret）完成；验证六个键判定正确（三个 api-key → secret，base-url/host/name → text）。AI 主体迁移（Spring AI + 会话表 + VulnTools 重写）另行开工。
