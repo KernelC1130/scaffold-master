@@ -126,7 +126,7 @@ function renderMarkdown(text: string) {
   const downloadSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'
   return html
     .split('<pre>')
-    .join('<div class="code-block"><div class="code-header"><span class="code-lang"></span><span class="code-actions"><button type="button" class="code-copy-btn">' + copySvg + '复制</button><button type="button" class="code-download-btn">' + downloadSvg + '下载</button></span></div><pre>')
+    .join('<div class="ai-code-block"><div class="ai-code-header"><span class="ai-code-lang"></span><span class="ai-code-actions"><button type="button" class="ai-code-copy">' + copySvg + '复制</button><button type="button" class="ai-code-dl">' + downloadSvg + '下载</button></span></div><pre>')
     .split('</pre>')
     .join('</pre></div>')
 }
@@ -134,12 +134,12 @@ function renderMarkdown(text: string) {
 /** 补齐代码块语言标签（marked 的 language-xxx 在内层 code class 上，字符串阶段拿不到） */
 function decorateCodeBlocks() {
   if (!bodyRef.value) return
-  bodyRef.value.querySelectorAll<HTMLElement>('.code-block').forEach(block => {
+  bodyRef.value.querySelectorAll<HTMLElement>('.ai-code-block').forEach(block => {
     if (block.dataset.langDone) return
     block.dataset.langDone = '1'
     const code = block.querySelector('code')
     const m = code ? code.className.match(/language-([\w-]+)/) : null
-    const langEl = block.querySelector('.code-lang')
+    const langEl = block.querySelector('.ai-code-lang')
     if (langEl) langEl.textContent = m ? m[1] : 'text'
   })
 }
@@ -183,9 +183,9 @@ function downloadCode(pre: HTMLElement, lang: string) {
 /** 消息容器上的事件委托：复制/下载按钮（流式重渲 DOM 不需要重新绑定） */
 function onBodyClick(e: MouseEvent) {
   const target = e.target instanceof Element ? e.target : null
-  const copyBtn = target?.closest('.code-copy-btn')
+  const copyBtn = target?.closest('.ai-code-copy')
   if (copyBtn) {
-    const pre = copyBtn.closest('.code-block')?.querySelector('pre')
+    const pre = copyBtn.closest('.ai-code-block')?.querySelector('pre')
     if (!pre) return
     const code = pre.querySelector('code')
     navigator.clipboard
@@ -194,9 +194,9 @@ function onBodyClick(e: MouseEvent) {
       .catch(() => pushToast('复制失败，请手动选择复制', 'danger'))
     return
   }
-  const downloadBtn = target?.closest('.code-download-btn')
+  const downloadBtn = target?.closest('.ai-code-dl')
   if (downloadBtn) {
-    const block = downloadBtn.closest('.code-block')
+    const block = downloadBtn.closest('.ai-code-block')
     const pre = block?.querySelector('pre')
     if (pre) downloadCode(pre as HTMLElement, detectLang(pre as HTMLElement))
   }
@@ -578,23 +578,23 @@ body.fab-dragging { user-select: none; }
 
 /* 代码块 + 工具栏 */
 /* 代码块浅色：header 与代码同底融合为一个容器（参考组内平台样式） */
-.md-body :deep(.code-block) { margin: 2px 0; border-radius: 10px; overflow: hidden; background: #f6f8fa; }
-.md-body :deep(p + .code-block) { margin-top: 2px; }
-.md-body :deep(.code-block + p) { margin-top: 4px; }
-.md-body :deep(.code-header) { display: flex; justify-content: space-between; align-items: center; padding: 6px 14px 2px; }
-.md-body :deep(.code-lang) { font-family: Consolas, ui-monospace, monospace; font-size: 12px; color: var(--ink-muted, #6e7480); }
-.md-body :deep(.code-actions) { display: flex; gap: 2px; }
+.md-body :deep(.ai-code-block) { margin: 2px 0; border-radius: 10px; overflow: hidden; background: #f6f8fa; }
+.md-body :deep(p + .ai-code-block) { margin-top: 2px; }
+.md-body :deep(.ai-code-block + p) { margin-top: 4px; }
+.md-body :deep(.ai-code-header) { display: flex; justify-content: space-between; align-items: center; padding: 6px 14px 2px; }
+.md-body :deep(.ai-code-lang) { font-family: Consolas, ui-monospace, monospace; font-size: 12px; color: var(--ink-muted, #6e7480); }
+.md-body :deep(.ai-code-actions) { display: flex; gap: 2px; }
 /* 按钮字体显式硬编码（Windows 上 inherit 会回退到系统默认字体出楷体） */
-.md-body :deep(.code-copy-btn), .md-body :deep(.code-download-btn) { display: inline-flex; align-items: center; gap: 5px; border: 0;
+.md-body :deep(.ai-code-copy), .md-body :deep(.ai-code-dl) { display: inline-flex; align-items: center; gap: 5px; border: 0;
                                      background: none; padding: 3px 8px; border-radius: 7px;
                                      font-family: "SF Pro Text", "PingFang SC", -apple-system, BlinkMacSystemFont, "Noto Sans SC", "Microsoft YaHei", sans-serif;
                                      font-size: 12px; color: var(--ink-soft, #4b5563);
                                      cursor: pointer; transition: background .15s ease, color .15s ease; }
-.md-body :deep(.code-copy-btn:hover), .md-body :deep(.code-download-btn:hover) { color: var(--blue, #236de9); background: rgba(35,109,233,.08); }
-.md-body :deep(.code-block pre) { margin: 0; padding: 0 14px 8px; overflow-x: auto; }
+.md-body :deep(.ai-code-copy:hover), .md-body :deep(.ai-code-dl:hover) { color: var(--blue, #236de9); background: rgba(35,109,233,.08); }
+.md-body :deep(.ai-code-block pre) { margin: 0; padding: 0 14px 8px; overflow-x: auto; }
 /* github.css 给 pre code.hljs 自带 1em padding，是 header 与代码大空隙的真凶，显式清零 */
-.md-body :deep(.code-block pre code.hljs) { padding: 0; background: none; }
-.md-body :deep(.code-block code) { font-family: Consolas, ui-monospace, monospace; font-size: 12.5px; line-height: 1.65;
+.md-body :deep(.ai-code-block pre code.hljs) { padding: 0; background: none; }
+.md-body :deep(.ai-code-block code) { font-family: Consolas, ui-monospace, monospace; font-size: 12.5px; line-height: 1.65;
                                    background: none; padding: 0; color: #24292f; }
 
 /* 三点动画 */
