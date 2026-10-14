@@ -71,13 +71,25 @@ const sessionMenuOpen = ref(false)
 /** 恢复中标记：打开弹窗拉历史期间消息区显示加载动画而非空态（防闪烁） */
 const restoring = ref(false)
 
-/** 本地记住最后活跃会话，刷新后打开直接恢复 */
+/** 本地记住最后活跃会话与「账号下是否有会话」，刷新后打开免等待直接落对应状态 */
 const LAST_SESSION_KEY = 'scaffold.ai.last-session'
+const HAS_SESSIONS_KEY = 'scaffold.ai.has-sessions'
 function rememberSession(id: number | null) {
   try {
-    if (id) localStorage.setItem(LAST_SESSION_KEY, String(id))
-    else localStorage.removeItem(LAST_SESSION_KEY)
+    if (id) {
+      localStorage.setItem(LAST_SESSION_KEY, String(id))
+      localStorage.setItem(HAS_SESSIONS_KEY, '1')
+    } else {
+      localStorage.removeItem(LAST_SESSION_KEY)
+    }
   } catch { /* 隐私模式等存储不可用，静默 */ }
+}
+function hadSessions() {
+  try {
+    return localStorage.getItem(HAS_SESSIONS_KEY) === '1'
+  } catch {
+    return true
+  }
 }
 
 /** 恢复动画最短展示时长：数据再快也播满，切换不突兀 */
@@ -148,14 +160,15 @@ function onFabClick() {
     nextTick(() => { decorateCodeBlocks(); scrollToBottom() })
     return
   }
-  // 无消息（刷新后首开）：首帧即加载态，动画播满最短时长后落入最近会话
-  beginRestore()
+  // 无消息（刷新后首开）：上次有会话 → 首帧加载动画（播满后落内容）；上次无 → 直接空态不空等
+  if (hadSessions()) beginRestore()
   void loadSessions().then(() => {
     const cached = Number(localStorage.getItem(LAST_SESSION_KEY) || 0) || null
     const target = cached && sessions.value.some(x => x.sessionId === cached)
       ? cached : sessions.value[0]?.sessionId ?? null
     if (!target) {
-      finishRestore(() => {})
+      // 账号下确无会话：立即落空态
+      restoring.value = false
       return
     }
     const s = sessions.value.find(x => x.sessionId === target)
