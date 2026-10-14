@@ -126,6 +126,8 @@ function onFabClick() {
     return
   }
   open.value = true
+  // 无消息时首帧即加载态：杜绝「你好页」在恢复完成前闪现
+  if (!messages.value.length) restoring.value = true
   // 刷新后恢复会话：优先用本地记忆的 id 并行拉历史（无空窗），否则恢复列表里最近活跃的
   const cached = Number(localStorage.getItem(LAST_SESSION_KEY) || 0) || null
   if (cached && !messages.value.length) {
