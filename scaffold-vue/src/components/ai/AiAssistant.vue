@@ -68,6 +68,17 @@ const currentSessionId = ref<number | null>(null)
 const currentTitle = ref('AI 助手')
 const sessions = ref<Array<{ sessionId: number; title: string }>>([])
 const sessionMenuOpen = ref(false)
+/** 恢复中标记：打开弹窗拉历史期间消息区显示加载动画而非空态（防闪烁） */
+const restoring = ref(false)
+
+/** 本地记住最后活跃会话，刷新后打开直接恢复 */
+const LAST_SESSION_KEY = 'scaffold.ai.last-session'
+function rememberSession(id: number | null) {
+  try {
+    if (id) localStorage.setItem(LAST_SESSION_KEY, String(id))
+    else localStorage.removeItem(LAST_SESSION_KEY)
+  } catch { /* 隐私模式等存储不可用，静默 */ }
+}
 
 /* ── 悬浮球拖动：拖走换位置，原地松手视为点击 ── */
 const fabRef = ref<HTMLElement | null>(null)
@@ -115,11 +126,35 @@ function onFabClick() {
     return
   }
   open.value = true
-  // 刷新后恢复最近活跃会话（避免「对话丢失」的观感，同旧版行为）
+  // 刷新后恢复会话：优先用本地记忆的 id 并行拉历史（无空窗），否则恢复列表里最近活跃的
+  const cached = Number(localStorage.getItem(LAST_SESSION_KEY) || 0) || null
+  if (cached && !messages.value.length) {
+    currentSessionId.value = cached
+    restoring.value = true
+    void vulnApi.ai.history(cached).then(res => {
+      messages.value = (res.list || []).map(m => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+        html: m.role === 'assistant' ? renderMarkdown(m.content) : '',
+      }))
+      nextTick(decorateCodeBlocks)
+      scrollToBottom()
+    }).catch(() => {
+      currentSessionId.value = null
+    }).finally(() => { restoring.value = false })
+  }
   void loadSessions().then(() => {
-    const latest = sessions.value[0]
-    if (latest && !currentSessionId.value) {
-      void switchSession(latest.sessionId)
+    if (currentSessionId.value) {
+      const s = sessions.value.find(x => x.sessionId === currentSessionId.value)
+      if (s) currentTitle.value = s.title
+    } else {
+      const latest = sessions.value[0]
+      if (latest) {
+        restoring.value = true
+        void switchSession(latest.sessionId)
+      } else {
+        restoring.value = false
+      }
     }
   })
 }
@@ -275,6 +310,7 @@ async function send() {
       const created = await vulnApi.ai.newSession(question)
       currentSessionId.value = created.sessionId
       currentTitle.value = created.title
+      rememberSession(created.sessionId)
       sessions.value.unshift({ sessionId: created.sessionId, title: created.title })
     }
     const token = authSession.token()
@@ -370,15 +406,18 @@ function handleNewSession() {
   currentTitle.value = 'AI 助手'
   messages.value = []
   sessionMenuOpen.value = false
+  rememberSession(null)
 }
 
 /** 切换会话：从服务端拉取历史消息渲染 */
 async function switchSession(sessionId: number) {
   if (sessionId === currentSessionId.value || loading.value) return
   sessionMenuOpen.value = false
+  if (!messages.value.length) restoring.value = true
   try {
     const res = await vulnApi.ai.history(sessionId)
     currentSessionId.value = sessionId
+    rememberSession(sessionId)
     messages.value = (res.list || []).map(m => ({
       role: m.role as 'user' | 'assistant',
       content: m.content,
@@ -390,6 +429,8 @@ async function switchSession(sessionId: number) {
     scrollToBottom()
   } catch (e) {
     toastError(e, '加载会话失败')
+  } finally {
+    restoring.value = false
   }
 }
 
@@ -452,7 +493,10 @@ onBeforeUnmount(() => {
         </header>
 
         <div ref="bodyRef" class="ai-body" @click="onBodyClick">
-          <div v-if="messages.length === 0" class="ai-empty">
+          <div v-if="messages.length === 0 && restoring" class="ai-empty">
+            <div class="typing"><span></span><span></span><span></span></div>
+          </div>
+          <div v-else-if="messages.length === 0" class="ai-empty">
             <span class="ai-empty-mark"><Icon name="sparkles" :size="26" /></span>
             <p>你好，我是漏洞管理平台 AI 助手</p>
             <p class="sub">可以问我漏洞情况、风险统计等问题</p>
