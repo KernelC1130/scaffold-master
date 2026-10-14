@@ -122,9 +122,11 @@ function onFabClick() {
 function renderMarkdown(text: string) {
   const html = DOMPurify.sanitize(marked.parse(text) as string)
   // 容器在 sanitize 之后注入（静态字符串，不经消毒也不需要）
+  const copySvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'
+  const downloadSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'
   return html
     .split('<pre>')
-    .join('<div class="code-block"><div class="code-header"><span class="code-lang"></span><span class="code-actions"><button type="button" class="code-copy-btn">复制</button><button type="button" class="code-download-btn">下载</button></span></div><pre>')
+    .join('<div class="code-block"><div class="code-header"><span class="code-lang"></span><span class="code-actions"><button type="button" class="code-copy-btn">' + copySvg + '复制</button><button type="button" class="code-download-btn">' + downloadSvg + '下载</button></span></div><pre>')
     .split('</pre>')
     .join('</pre></div>')
 }
@@ -575,17 +577,16 @@ body.fab-dragging { user-select: none; }
 .md-body :deep(.chat-err) { color: #d64545; margin: 0; }
 
 /* 代码块 + 工具栏 */
-/* 代码块浅色（github.css 高亮主题即浅色系，深底配它曾颜色错乱） */
-.md-body :deep(.code-block) { margin: 8px 0; border-radius: 10px; overflow: hidden; background: #f6f8fa; border: 1px solid var(--line, rgba(23,25,29,.1)); }
-.md-body :deep(.code-header) { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px;
-                               background: rgba(23,25,29,.04); border-bottom: 1px solid var(--line, rgba(23,25,29,.08)); }
-.md-body :deep(.code-lang) { font-family: Consolas, ui-monospace, monospace; font-size: 10px; letter-spacing: .06em;
-                             color: var(--ink-faint, #9aa2ab); text-transform: uppercase; }
-.md-body :deep(.code-actions) { display: flex; gap: 4px; }
-.md-body :deep(.code-copy-btn), .md-body :deep(.code-download-btn) { border: 0; background: none; padding: 2px 6px; border-radius: 6px;
-                                     font-size: 11px; color: var(--ink-soft, #4b5563); cursor: pointer; }
-.md-body :deep(.code-copy-btn:hover), .md-body :deep(.code-download-btn:hover) { color: var(--ink, #101418); background: rgba(23,25,29,.07); }
-.md-body :deep(.code-block pre) { margin: 0; padding: 12px 14px; overflow-x: auto; }
+/* 代码块浅色：header 与代码同底融合为一个容器（参考组内平台样式） */
+.md-body :deep(.code-block) { margin: 8px 0; border-radius: 10px; overflow: hidden; background: #f6f8fa; }
+.md-body :deep(.code-header) { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px 0; }
+.md-body :deep(.code-lang) { font-family: Consolas, ui-monospace, monospace; font-size: 11.5px; color: var(--ink-muted, #6e7480); }
+.md-body :deep(.code-actions) { display: flex; gap: 2px; }
+.md-body :deep(.code-copy-btn), .md-body :deep(.code-download-btn) { display: inline-flex; align-items: center; gap: 5px; border: 0;
+                                     background: none; padding: 3px 8px; border-radius: 7px; font: inherit; font-size: 12px;
+                                     color: var(--ink-soft, #4b5563); cursor: pointer; transition: background .15s ease, color .15s ease; }
+.md-body :deep(.code-copy-btn:hover), .md-body :deep(.code-download-btn:hover) { color: var(--blue, #236de9); background: rgba(35,109,233,.08); }
+.md-body :deep(.code-block pre) { margin: 0; padding: 4px 14px 14px; overflow-x: auto; }
 .md-body :deep(.code-block code) { font-family: Consolas, ui-monospace, monospace; font-size: 12.5px; line-height: 1.65;
                                    background: none; padding: 0; color: #24292f; }
 
