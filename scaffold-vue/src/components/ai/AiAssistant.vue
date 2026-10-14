@@ -80,6 +80,22 @@ function rememberSession(id: number | null) {
   } catch { /* 隐私模式等存储不可用，静默 */ }
 }
 
+/** 恢复动画最短展示时长：数据再快也播满，切换不突兀 */
+const RESTORE_MIN_MS = 450
+let restoreStartedAt = 0
+function beginRestore() {
+  restoring.value = true
+  restoreStartedAt = Date.now()
+}
+/** 播满最短时长后应用内容并收起动画 */
+function finishRestore(apply: () => void) {
+  const wait = Math.max(0, RESTORE_MIN_MS - (Date.now() - restoreStartedAt))
+  setTimeout(() => {
+    apply()
+    restoring.value = false
+  }, wait)
+}
+
 /* ── 悬浮球拖动：拖走换位置，原地松手视为点击 ── */
 const fabRef = ref<HTMLElement | null>(null)
 const fabPos = ref<{ x: number; y: number } | null>(null)
@@ -130,39 +146,33 @@ function onFabClick() {
   if (messages.value.length) {
     messages.value = messages.value.map(m => ({ ...m, html: m.role === 'assistant' ? renderMarkdown(m.content) : '' }))
     nextTick(() => { decorateCodeBlocks(); scrollToBottom() })
+    return
   }
-  // 无消息时首帧即加载态：杜绝「你好页」在恢复完成前闪现
-  if (!messages.value.length) restoring.value = true
-  // 刷新后恢复会话：优先用本地记忆的 id 并行拉历史（无空窗），否则恢复列表里最近活跃的
-  const cached = Number(localStorage.getItem(LAST_SESSION_KEY) || 0) || null
-  if (cached && !messages.value.length) {
-    currentSessionId.value = cached
-    restoring.value = true
-    void vulnApi.ai.history(cached).then(res => {
-      messages.value = (res.list || []).map(m => ({
-        role: m.role as 'user' | 'assistant',
-        content: m.content,
-        html: m.role === 'assistant' ? renderMarkdown(m.content) : '',
-      }))
-      nextTick(decorateCodeBlocks)
-      scrollToBottom()
-    }).catch(() => {
-      currentSessionId.value = null
-    }).finally(() => { restoring.value = false })
-  }
+  // 无消息（刷新后首开）：首帧即加载态，动画播满最短时长后落入最近会话
+  beginRestore()
   void loadSessions().then(() => {
-    if (currentSessionId.value) {
-      const s = sessions.value.find(x => x.sessionId === currentSessionId.value)
-      if (s) currentTitle.value = s.title
-    } else {
-      const latest = sessions.value[0]
-      if (latest) {
-        restoring.value = true
-        void switchSession(latest.sessionId)
-      } else {
-        restoring.value = false
-      }
+    const cached = Number(localStorage.getItem(LAST_SESSION_KEY) || 0) || null
+    const target = cached && sessions.value.some(x => x.sessionId === cached)
+      ? cached : sessions.value[0]?.sessionId ?? null
+    if (!target) {
+      finishRestore(() => {})
+      return
     }
+    const s = sessions.value.find(x => x.sessionId === target)
+    if (s) currentTitle.value = s.title
+    void vulnApi.ai.history(target).then(res => {
+      finishRestore(() => {
+        currentSessionId.value = target
+        rememberSession(target)
+        messages.value = (res.list || []).map(m => ({
+          role: m.role as 'user' | 'assistant',
+          content: m.content,
+          html: m.role === 'assistant' ? renderMarkdown(m.content) : '',
+        }))
+        nextTick(decorateCodeBlocks)
+        scrollToBottom()
+      })
+    }).catch(() => finishRestore(() => { currentSessionId.value = null }))
   })
 }
 
@@ -420,7 +430,6 @@ function handleNewSession() {
 async function switchSession(sessionId: number) {
   if (sessionId === currentSessionId.value || loading.value) return
   sessionMenuOpen.value = false
-  if (!messages.value.length) restoring.value = true
   try {
     const res = await vulnApi.ai.history(sessionId)
     currentSessionId.value = sessionId
@@ -436,8 +445,6 @@ async function switchSession(sessionId: number) {
     scrollToBottom()
   } catch (e) {
     toastError(e, '加载会话失败')
-  } finally {
-    restoring.value = false
   }
 }
 
