@@ -126,6 +126,11 @@ function onFabClick() {
     return
   }
   open.value = true
+  // 弹窗 DOM 随关闭销毁、随打开重建：保留中的消息需重新渲染装饰（语言标签等）
+  if (messages.value.length) {
+    messages.value = messages.value.map(m => ({ ...m, html: m.role === 'assistant' ? renderMarkdown(m.content) : '' }))
+    nextTick(decorateCodeBlocks)
+  }
   // 无消息时首帧即加载态：杜绝「你好页」在恢复完成前闪现
   if (!messages.value.length) restoring.value = true
   // 刷新后恢复会话：优先用本地记忆的 id 并行拉历史（无空窗），否则恢复列表里最近活跃的
