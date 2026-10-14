@@ -1,5 +1,6 @@
 package com.scaffold.vuln.controller;
 
+import com.scaffold.common.domain.R;
 import com.scaffold.framework.audit.OperLog;
 import com.scaffold.framework.security.RequiresPermission;
 import com.scaffold.vuln.ai.rag.KnowledgePipeline;
@@ -28,14 +29,14 @@ public class AiKnowledgeController {
     @PostMapping("/rebuild")
     @RequiresPermission("vuln:ai:manage")
     @OperLog(module = "AI 知识库", action = "重建索引")
-    public Map<String, Object> rebuild() {
-        return Map.of("summary", knowledgePipeline.rebuild());
+    public com.scaffold.common.domain.R<Map<String, Object>> rebuild() {
+        return com.scaffold.common.domain.R.success(Map.of("summary", knowledgePipeline.rebuild()));
     }
 
     /** 知识库状态（已索引文件数、段落数、向量模型等） */
     @GetMapping("/status")
     @RequiresPermission("vuln:ai:manage")
-    public Map<String, Object> status() {
-        return knowledgePipeline.status();
+    public com.scaffold.common.domain.R<Map<String, Object>> status() {
+        return com.scaffold.common.domain.R.success(knowledgePipeline.status());
     }
 }
