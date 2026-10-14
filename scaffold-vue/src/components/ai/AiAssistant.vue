@@ -631,6 +631,13 @@ body.fab-dragging { user-select: none; }
                                     font-family: Consolas, ui-monospace, monospace; font-size: 12px; }
 .md-body :deep(blockquote) { margin: 6px 0; padding: 4px 12px; border-left: 3px solid var(--line-strong, rgba(23,25,29,.14)); color: var(--ink-soft, #4b5563); }
 .md-body :deep(a) { color: var(--blue, #236de9); }
+
+/* Markdown 表格：紧凑边框样式，列多时横向滚动 */
+.md-body :deep(table) { display: block; width: max-content; max-width: 100%; margin: 8px 0; border-collapse: collapse; font-size: 12.5px; overflow-x: auto; }
+.md-body :deep(.table-scroll) { overflow-x: auto; }
+.md-body :deep(th), .md-body :deep(td) { border: 1px solid var(--line, rgba(23,25,29,.12)); padding: 6px 10px; text-align: left; white-space: nowrap; }
+.md-body :deep(th) { background: rgba(23,25,29,.05); font-weight: 650; color: var(--ink, #101418); }
+.md-body :deep(tr:nth-child(2n) td) { background: rgba(23,25,29,.025); }
 .md-body :deep(.chat-err) { color: #d64545; margin: 0; }
 
 /* 代码块 + 工具栏 */
