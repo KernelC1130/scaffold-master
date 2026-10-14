@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.scaffold.common.domain.R;
 import com.scaffold.common.exception.BusinessException;
 import com.scaffold.framework.audit.OperLog;
 import com.scaffold.framework.security.RequiresPermission;
@@ -57,32 +58,32 @@ public class AiChatController {
     /** 新建会话（title 取首问前 20 字，无首问时为「新对话」，首问落库时自动补全） */
     @PostMapping("/chat/new")
     @RequiresPermission("vuln:ai:chat")
-    public Map<String, Object> newSession(@RequestBody(required = false) NewSessionBody body) {
+    public R<Map<String, Object>> newSession(@RequestBody(required = false) NewSessionBody body) {
         String firstQuestion = body == null ? null : body.question();
         AiChatSession session = aiChatService.createSession(currentUserId(), firstQuestion);
-        return Map.of("sessionId", session.getSessionId(), "title", session.getTitle());
+        return R.success(Map.of("sessionId", session.getSessionId(), "title", session.getTitle()));
     }
 
     /** 当前用户的会话列表（按最后活跃时间倒序） */
     @GetMapping("/chat/sessions")
     @RequiresPermission("vuln:ai:chat")
-    public Map<String, Object> sessions() {
-        return Map.of("list", aiChatService.listSessions(currentUserId()));
+    public R<Map<String, Object>> sessions() {
+        return R.success(Map.of("list", aiChatService.listSessions(currentUserId())));
     }
 
     /** 某会话的完整消息（校验归属，前端刷新后恢复对话用） */
     @GetMapping("/chat/history/{sessionId}")
     @RequiresPermission("vuln:ai:chat")
-    public Map<String, Object> history(@PathVariable Long sessionId) {
+    public R<Map<String, Object>> history(@PathVariable Long sessionId) {
         aiChatService.getOwnedSession(sessionId, currentUserId());
-        return Map.of("list", aiChatService.listMessages(sessionId));
+        return R.success(Map.of("list", aiChatService.listMessages(sessionId)));
     }
 
     /** AI 对话（同步）：history 由后端从消息表读取（最近 10 条），不信任前端传入 */
     @PostMapping("/chat")
     @RequiresPermission("vuln:ai:chat")
     @OperLog(module = "AI 助手", action = "对话")
-    public Map<String, Object> chat(@RequestBody AiChatRequest req) {
+    public R<Map<String, Object>> chat(@RequestBody AiChatRequest req) {
         AiChatSession session = resolveSession(req);
         List<Message> history = recentHistory(session.getSessionId());
         String answer = aiModelFactory.getChatClient()
@@ -92,7 +93,7 @@ public class AiChatController {
                 .call()
                 .content();
         aiChatService.saveRound(session.getSessionId(), req.question(), answer);
-        return Map.of("answer", answer == null ? "" : answer);
+        return R.success(Map.of("answer", answer == null ? "" : answer));
     }
 
     /**
