@@ -579,15 +579,19 @@ body.fab-dragging { user-select: none; }
 /* 代码块 + 工具栏 */
 /* 代码块浅色：header 与代码同底融合为一个容器（参考组内平台样式） */
 .md-body :deep(.code-block) { margin: 6px 0; border-radius: 10px; overflow: hidden; background: #f6f8fa; }
-.md-body :deep(.code-header) { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px 0; }
-.md-body :deep(.code-lang) { font-family: Consolas, ui-monospace, monospace; font-size: 11.5px; color: var(--ink-muted, #6e7480); }
+.md-body :deep(.code-header) { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px 4px; }
+.md-body :deep(.code-lang) { font-family: Consolas, ui-monospace, monospace; font-size: 12px; color: var(--ink-muted, #6e7480); }
 .md-body :deep(.code-actions) { display: flex; gap: 2px; }
+/* 按钮字体显式硬编码（Windows 上 inherit 会回退到系统默认字体出楷体） */
 .md-body :deep(.code-copy-btn), .md-body :deep(.code-download-btn) { display: inline-flex; align-items: center; gap: 5px; border: 0;
                                      background: none; padding: 3px 8px; border-radius: 7px;
-                                     font-family: inherit; font-size: 13.5px; color: var(--ink-soft, #4b5563);
+                                     font-family: "SF Pro Text", "PingFang SC", -apple-system, BlinkMacSystemFont, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+                                     font-size: 13.5px; color: var(--ink-soft, #4b5563);
                                      cursor: pointer; transition: background .15s ease, color .15s ease; }
 .md-body :deep(.code-copy-btn:hover), .md-body :deep(.code-download-btn:hover) { color: var(--blue, #236de9); background: rgba(35,109,233,.08); }
-.md-body :deep(.code-block pre) { margin: 0; padding: 0 14px 12px; overflow-x: auto; }
+.md-body :deep(.code-block pre) { margin: 0; padding: 0 14px 10px; overflow-x: auto; }
+/* github.css 给 pre code.hljs 自带 1em padding，是 header 与代码大空隙的真凶，显式清零 */
+.md-body :deep(.code-block pre code.hljs) { padding: 0; background: none; }
 .md-body :deep(.code-block code) { font-family: Consolas, ui-monospace, monospace; font-size: 12.5px; line-height: 1.65;
                                    background: none; padding: 0; color: #24292f; }
 
