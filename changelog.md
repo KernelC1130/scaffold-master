@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-14（AI 迁移第二批：VulnTools 业务工具）
+
+- 新增 `VulnTools`（com.scaffold.vuln.ai）：7 个 Function Calling 工具——platformSummary（四读数总览）、listVulns/vulnStatistics、listAssets/assetStatistics、listRepairTasks/repairTaskStatistics、topRiskAssets；内部走 vuln 模块四 Mapper，返回给模型的字段精炼裁剪 + 代码值翻译中文标签，列表限 20（最大 50）并附总数说明防上下文膨胀。挂入 AiModelFactory.defaultTools。端到端实测：问「现在有多少个高危未闭合漏洞」→ 模型调用工具后回答 10（与库中数据一致）。
+
 ## 2026-10-14（AI 迁移：悬浮窗前端）
 
 - 新增 `components/ai/AiAssistant.vue` 全局组件（挂 AppShell）：可拖动悬浮球 + 聊天弹窗，交互逻辑自旧平台 AiAssistant（896 行）照搬——fetch+ReadableStream 手动解析 SSE（EventSource 带不了 Authorization 头）、伪打字机平滑输出、marked+highlight.js 渲染 + DOMPurify 消毒、代码块复制/下载（智能文件名）、会话下拉切换、停止生成、关闭中断流式。UI 换 scaffold 珍珠玻璃组件（sparkles 图标新入图标库）。api/vuln.ts 加会话接口封装。类型检查全绿；无权限用户 SSE error 帧显示验证通过。线上已部署（index-Bup0RssR.js）。

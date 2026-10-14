@@ -16,6 +16,7 @@ import com.openai.errors.RateLimitException;
 import com.openai.errors.UnauthorizedException;
 import com.scaffold.common.exception.BusinessException;
 import com.scaffold.system.service.SystemManagementService;
+import com.scaffold.vuln.ai.VulnTools;
 import com.scaffold.vuln.ai.WeatherTools;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -53,10 +54,12 @@ public class AiModelFactory {
 
     private final SystemManagementService configService;
     private final WeatherTools weatherTools;
+    private final VulnTools vulnTools;
 
-    public AiModelFactory(SystemManagementService configService, WeatherTools weatherTools) {
+    public AiModelFactory(SystemManagementService configService, WeatherTools weatherTools, VulnTools vulnTools) {
         this.configService = configService;
         this.weatherTools = weatherTools;
+        this.vulnTools = vulnTools;
     }
 
     /**
@@ -68,7 +71,7 @@ public class AiModelFactory {
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd EEEE").withLocale(Locale.CHINA));
         return ChatClient.builder(buildChatModel(CHAT_TIMEOUT))
                 .defaultSystem("今天是 " + today + "。\n" + SYSTEM_PROMPT)
-                .defaultTools(weatherTools)
+                .defaultTools(vulnTools, weatherTools)
                 .build();
     }
 
