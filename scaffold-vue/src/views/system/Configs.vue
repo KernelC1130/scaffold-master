@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Icon from '@/components/Icon.vue'
 import { Button, Field, IconButton, Segmented, SectionLabel, Switch, Tag, TextInput, type Column } from '@/components/ui'
 import { FormDialog, ListPage, PermissionButton } from '@/components/business'
-import { systemApi } from '@/api'
+import { systemApi, vulnApi } from '@/api'
 import { useListPage } from '@/composables/list'
 import { confirm } from '@/composables/confirm'
 import { pushToast, toastError } from '@/composables/toast'
@@ -72,6 +72,46 @@ watch(view, async (next, prev) => {
 }, { immediate: true })
 
 interface SettingItem { row: ConfigRow; title: string; kind: ReturnType<typeof inferConfigKind>; locked: boolean }
+/* ── AI 专属操作：连通性测试（AI 模型服务组）与知识库重建（向量模型服务组） ── */
+const hasManage = hasPermission('vuln:ai:manage')
+const testing = ref(false)
+const testResult = ref<{ chat: { ok: boolean; msg: string; ms: number }; embedding: { ok: boolean; msg: string; ms: number } } | null>(null)
+const kbStatus = ref<{ chunks: number; indexedFiles: number; ready: boolean } | null>(null)
+const rebuilding = ref(false)
+
+async function runTest() {
+  testing.value = true
+  testResult.value = null
+  try {
+    testResult.value = await vulnApi.ai.test()
+  } catch (e) {
+    toastError(e, '连通性测试请求失败')
+  } finally {
+    testing.value = false
+  }
+}
+
+async function loadKbStatus() {
+  try {
+    kbStatus.value = await vulnApi.ai.kbStatus()
+  } catch {
+    kbStatus.value = null
+  }
+}
+
+async function rebuildKb() {
+  rebuilding.value = true
+  try {
+    const res = await vulnApi.ai.rebuildKb()
+    pushToast(String(res.summary ?? '重建完成'))
+    await loadKbStatus()
+  } catch (e) {
+    toastError(e, '知识库重建失败')
+  } finally {
+    rebuilding.value = false
+  }
+}
+
 const groups = computed(() => {
   const key = filter.value.trim().toLowerCase()
   const map = new Map<string, SettingItem[]>()
@@ -93,6 +133,10 @@ function setValue(row: ConfigRow, value: string | number | boolean | null) {
 }
 const changes = computed(() => all.value.filter(r => r.id in drafts).map(r => ({ row: r, from: r.value, to: drafts[r.id] })))
 const invalid = computed(() => changes.value.filter(c => !c.to.trim()).map(c => c.row.id))
+onMounted(() => {
+  // AI 知识库状态（重建按钮旁展示）；页面无 AI 配置时静默跳过
+  if (all.value.some(r => r.key.startsWith('ai.embedding.'))) void loadKbStatus()
+})
 
 function discard() {
   Object.keys(drafts).forEach(id => delete drafts[Number(id)])
@@ -215,7 +259,28 @@ async function remove(row: ConfigRow) {
           <p v-if="panelLoading && !all.length" class="band-empty faint">正在加载参数…</p>
           <p v-else-if="!groups.length" class="band-empty faint">没有匹配的参数</p>
           <section v-for="g in groups" :id="`settings-${g.name}`" :key="g.name" class="settings-group m-surface">
-            <SectionLabel :title="g.name" as="h3" />
+            <div class="settings-group-head">
+              <SectionLabel :title="g.name" as="h3" />
+              <div v-if="g.name === 'AI 模型服务'" class="settings-group-actions">
+                <button type="button" class="settings-action" :disabled="testing" @click="runTest">{{ testing ? '测试中…' : '测试连通性' }}</button>
+              </div>
+              <div v-else-if="g.name === '向量模型服务' && hasManage" class="settings-group-actions">
+                <span v-if="kbStatus" class="settings-kb-status">知识库 {{ kbStatus.chunks }} 段 / {{ kbStatus.indexedFiles }} 文件</span>
+                <button type="button" class="settings-action" :disabled="rebuilding" @click="rebuildKb">{{ rebuilding ? '重建中…' : '重建知识库' }}</button>
+              </div>
+            </div>
+            <div v-if="g.name === 'AI 模型服务' && testResult" class="settings-test-result">
+              <div :class="['test-line', { bad: !testResult.chat.ok }]">
+                <Icon :name="testResult.chat.ok ? 'check' : 'alert'" :size="13" />
+                <span>对话模型 · {{ testResult.chat.msg }}</span>
+                <span class="tnum test-ms">{{ testResult.chat.ms }}ms</span>
+              </div>
+              <div :class="['test-line', { bad: !testResult.embedding.ok }]">
+                <Icon :name="testResult.embedding.ok ? 'check' : 'alert'" :size="13" />
+                <span>向量模型 · {{ testResult.embedding.msg }}</span>
+                <span class="tnum test-ms">{{ testResult.embedding.ms }}ms</span>
+              </div>
+            </div>
             <div
               v-for="item in g.items"
               :key="item.row.id"

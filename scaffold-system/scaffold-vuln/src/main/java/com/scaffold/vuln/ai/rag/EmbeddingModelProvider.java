@@ -1,6 +1,7 @@
 package com.scaffold.vuln.ai.rag;
 
 import java.time.Duration;
+import java.util.Map;
 
 import com.openai.client.OpenAIClientImpl;
 import com.openai.core.ClientOptions;
@@ -54,6 +55,20 @@ public class EmbeddingModelProvider {
     /** 配置变更后失效缓存 */
     public void evict() {
         cachedModel = null;
+    }
+
+    /** 连通性测试：发一个词的 embed 请求，返回向量维度与耗时；异常转为可操作的提示 */
+    public Map<String, Object> testEmbedding() {
+        long t = System.currentTimeMillis();
+        try {
+            float[] vec = getEmbeddingModel().embed("ping");
+            long ms = System.currentTimeMillis() - t;
+            return Map.of("ok", true, "msg", "向量维度 " + vec.length, "ms", ms);
+        } catch (BusinessException e) {
+            return Map.of("ok", false, "msg", e.getMessage(), "ms", System.currentTimeMillis() - t);
+        } catch (Exception e) {
+            return Map.of("ok", false, "msg", "测试失败：" + e.getMessage(), "ms", System.currentTimeMillis() - t);
+        }
     }
 
     /** 读取向量模型相关参数值（供管线记录当前模型名等） */

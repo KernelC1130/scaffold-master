@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-14（参数配置页：AI 连通性测试 + 知识库重建入口）
+
+- 参数配置页 AI 分组组头加专属操作（改进自旧平台 AI 设置页的独立表单形态——scaffold 复用参数配置页零新页面）：「AI 模型服务」组加**测试连通性**按钮（一次测对话 + 向量双模型，结果行内展示 ok/提示/耗时）；「向量模型服务」组加**重建知识库**按钮 + 知识库状态小字（chunks/文件数，管理权限 vuln:ai:manage）。后端新增 /api/vuln/ai/test（EmbeddingModelProvider.testEmbedding 分型报错）。
+- 组头结构调整为 settings-group-head flex 容器（SectionLabel + 右侧动作区），样式入 instruments.css。线上双模型实测：chat pong 2.4s / embedding 1024 维 0.12s。
+
 ## 2026-10-14（AI 迁移第三批：RAG 知识库）
 
 - 自旧平台迁移 RAG 三件套（com.scaffold.vuln.ai.rag）：`KnowledgePipeline`（knowledge 目录 .md/.txt 扫描 → 400 字符切分/50 重叠 → SimpleVectorStore 向量化 JSON 持久化 + md5 增量清单）、`EmbeddingModelProvider`（ai.embedding.* 三参数装配，硅基流动 bge-m3）、`KnowledgeTools`（searchKnowledge 工具）。管理接口 /api/vuln/ai/knowledge/{rebuild,status}（权限 vuln:ai:manage）。AiModelFactory 恢复挂载 knowledgeTools + system prompt 知识库指引。部署：scaffold-vuln.service 加 WorkingDirectory=/opt/scaffold-vuln，knowledge 目录需 ubuntu 属主（服务用户）；种子文档两篇（SQL 注入/XSS 修复指南）。端到端实测：问平台 SLA → 引用知识库回答 48 小时时限与平台约定。

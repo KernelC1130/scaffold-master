@@ -114,6 +114,9 @@ export function createVulnApi(client: HttpClient) {
       newSession: (question?: string) => client.post<{ sessionId: number; title: string }>('/vuln/ai/chat/new', { question }),
       sessions: () => client.get<{ list: Array<{ sessionId: number; title: string; updateTime: string }> }>('/vuln/ai/chat/sessions'),
       history: (sessionId: number) => client.get<{ list: Array<{ id: number; role: string; content: string; createTime: string }> }>(`/vuln/ai/chat/history/${sessionId}`),
+      test: () => client.post<{ chat: { ok: boolean; msg: string; ms: number }; embedding: { ok: boolean; msg: string; ms: number } }>('/vuln/ai/test'),
+      kbStatus: () => client.get<{ chunks: number; indexedFiles: number; ready: boolean }>('/vuln/ai/knowledge/status'),
+      rebuildKb: () => client.post<{ summary: string }>('/vuln/ai/knowledge/rebuild'),
     },
   }
 }

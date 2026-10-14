@@ -3,6 +3,7 @@ package com.scaffold.vuln.controller;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import com.scaffold.framework.audit.OperLog;
 import com.scaffold.framework.security.RequiresPermission;
 import com.scaffold.vuln.ai.AiModelFactory;
 import com.scaffold.vuln.ai.domain.AiChatMessage;
+import com.scaffold.vuln.ai.rag.EmbeddingModelProvider;
 import com.scaffold.vuln.ai.domain.AiChatSession;
 import com.scaffold.vuln.ai.service.AiChatService;
 import org.springframework.ai.chat.client.ChatClient;
@@ -47,11 +49,14 @@ public class AiChatController {
 
     private final AiModelFactory aiModelFactory;
     private final AiChatService aiChatService;
+    private final EmbeddingModelProvider embeddingProvider;
     private final ObjectMapper objectMapper;
 
-    public AiChatController(AiModelFactory aiModelFactory, AiChatService aiChatService, ObjectMapper objectMapper) {
+    public AiChatController(AiModelFactory aiModelFactory, AiChatService aiChatService,
+                            EmbeddingModelProvider embeddingProvider, ObjectMapper objectMapper) {
         this.aiModelFactory = aiModelFactory;
         this.aiChatService = aiChatService;
+        this.embeddingProvider = embeddingProvider;
         this.objectMapper = objectMapper;
     }
 
@@ -143,6 +148,29 @@ public class AiChatController {
                 .header("X-Accel-Buffering", "no")
                 .contentType(MediaType.TEXT_EVENT_STREAM)
                 .body(body);
+    }
+
+    /**
+     * 连通性测试（对话模型 + 向量模型一次测完）：
+     * 结果对象返回（测试接口自身不抛异常），失败原因按类型给出可操作提示
+     */
+    @PostMapping("/test")
+    @RequiresPermission("vuln:ai:chat")
+    @OperLog(module = "AI 助手", action = "连通性测试")
+    public com.scaffold.common.domain.R<Map<String, Object>> test() {
+        Map<String, Object> chat = new LinkedHashMap<>();
+        long t = System.currentTimeMillis();
+        try {
+            chat.put("ok", true);
+            chat.put("msg", aiModelFactory.testConnection());
+        } catch (BusinessException e) {
+            chat.put("ok", false);
+            chat.put("msg", e.getMessage());
+        }
+        chat.put("ms", System.currentTimeMillis() - t);
+        return com.scaffold.common.domain.R.success(Map.of(
+                "chat", chat,
+                "embedding", embeddingProvider.testEmbedding()));
     }
 
     /** 校验请求并返回归属当前用户的会话（sessionId 缺失/非本人时抛异常） */

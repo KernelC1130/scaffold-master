@@ -1102,6 +1102,20 @@ button.trace-crumb:hover { color: var(--blue); }
 .settings-remark { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
 .settings-control { display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 0; }
 .settings-control > .input-shell { flex: 1; }
+/* AI 分组操作：组头右侧的测试/重建按钮与状态小字 */
+.settings-group-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.settings-group-actions { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.settings-action { border: 1px solid var(--line-strong, rgba(23,25,29,.14)); border-radius: 8px; background: var(--surface, #fff);
+                   padding: 4px 12px; font: inherit; font-size: 12px; font-weight: 600; color: var(--ink, #101418);
+                   cursor: pointer; transition: color .15s ease, border-color .15s ease, background .15s ease; }
+.settings-action:hover:not(:disabled) { color: var(--blue, #236de9); border-color: var(--blue, #236de9); background: rgba(35,109,233,.05); }
+.settings-action:disabled { opacity: .5; cursor: not-allowed; }
+.settings-kb-status { font-size: 11.5px; color: var(--ink-faint, #9aa2ab); }
+.settings-test-result { margin: 2px 0 8px; padding: 9px 12px; border-radius: 10px; background: var(--hover-bg, rgba(23,25,29,.04)); }
+.test-line { display: flex; align-items: center; gap: 7px; padding: 2px 0; font-size: 12.5px; color: var(--ink, #101418); }
+.test-line.bad { color: #d64545; }
+.test-line .icon { color: inherit; }
+.test-ms { margin-left: auto; font-size: 11px; color: var(--ink-faint, #9aa2ab); }
 /* secret 输入：眼睛按钮浮在输入框右内缘，输入框与其余行等宽（长短不齐修复） */
 .settings-secret { position: relative; flex: 1; display: flex; min-width: 0; }
 .settings-secret .input-shell { flex: 1; }
