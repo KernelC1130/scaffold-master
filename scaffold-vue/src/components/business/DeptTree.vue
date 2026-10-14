@@ -51,7 +51,7 @@ function select(id: number) {
 </script>
 
 <template>
-  <div>
+  <div class="dept-tree">
     <div class="split-side-head">
       <TextInput v-model="keyword" icon="search" placeholder="搜索部门" clearable />
     </div>

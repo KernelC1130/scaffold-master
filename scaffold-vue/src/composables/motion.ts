@@ -130,8 +130,9 @@ export function pageLeave(el: Element, done: () => void) {
 
 export function pageEnter(el: Element, done: () => void) {
   const page = el as HTMLElement
+  // 动效状态独立于 Vue 管理的 class，避免切换布局时被覆盖而重新隐藏内容。
   if (skipMotion()) {
-    page.classList.add('is-entrance-ready')
+    page.dataset.entranceReady = 'true'
     return done()
   }
   const items = page.querySelectorAll('.reveal')
@@ -140,7 +141,7 @@ export function pageEnter(el: Element, done: () => void) {
   gsap.set(page, { opacity: 1, scale: 0.994 })
   if (items.length) gsap.set(items, { opacity: 0, y: 12 })
   if (cards.length) gsap.set(cards, { opacity: 0, y: 18 })
-  page.classList.add('is-entrance-ready')
+  page.dataset.entranceReady = 'true'
   const tl = gsap.timeline({ onComplete: () => { gsap.set(page, { clearProps: 'transform' }); done() } })
   tl.to(page, { scale: 1, duration: DUR.pageIn, ease: EASE.glide }, 0)
   if (items.length) tl.to(items, { opacity: 1, y: 0, duration: DUR.pageIn, ease: EASE.reveal, stagger: { each: 0.05, from: 'start' }, clearProps: 'transform' }, 0.04)
@@ -150,14 +151,14 @@ export function pageEnter(el: Element, done: () => void) {
 
 /** 首屏页面（无过渡钩子时）：同样走一遍进场 */
 export function revealPage(page: HTMLElement | null) {
-  if (!page || page.classList.contains('is-entrance-ready')) return
+  if (!page || page.dataset.entranceReady === 'true') return
   pageEnter(page, () => {})
 }
 
 /* ── 外壳首次入场：品牌 → 导航组（from start）→ 顶栏 ── */
 export function playShellEntrance(frame: HTMLElement) {
   if (skipMotion()) {
-    frame.classList.add('is-entrance-ready')
+    frame.dataset.entranceReady = 'true'
     return
   }
   const brand = frame.querySelectorAll('.rail-brand')
@@ -165,7 +166,7 @@ export function playShellEntrance(frame: HTMLElement) {
   const top = frame.querySelectorAll('.topbar > *')
   const tl = gsap.timeline({ paused: true })
   tl.set([...brand, ...groups, ...top], { opacity: 0, y: 8 })
-  tl.add(() => frame.classList.add('is-entrance-ready'))
+  tl.add(() => { frame.dataset.entranceReady = 'true' })
   tl.to(brand, { opacity: 1, y: 0, duration: 0.6, ease: EASE.reveal }, 0)
   tl.to(groups, { opacity: 1, y: 0, duration: 0.6, ease: EASE.reveal, stagger: { each: 0.06, from: 'start' } }, 0.08)
   tl.to(top, { opacity: 1, y: 0, duration: 0.5, ease: EASE.reveal, stagger: 0.04 }, 0.14)
@@ -496,6 +497,55 @@ export async function flipLayout(targets: Element[] | NodeListOf<Element>, mutat
 /** 是否应跳过过程动画（reduced motion 或页面在后台） */
 export function motionSkipped() {
   return skipMotion()
+}
+
+/** 层叠卡片的目标位置；顺序为从前到后，第三层之后收进卡叠。 */
+export interface StackCardTarget {
+  element: HTMLElement
+  detail: HTMLElement | null
+  preview: HTMLElement | null
+  xPercent: number
+  y: number
+  rotation: number
+}
+
+export function turnStackCards(targets: StackCardTarget[], previousIndex: number, activeIndex: number, instant = false) {
+  const incoming = targets.find(card => Number(card.element.dataset.sheetIndex) === activeIndex) ?? targets[0]
+  const outgoing = targets.find(card => Number(card.element.dataset.sheetIndex) === previousIndex) ?? targets.find(card => card.element.dataset.stackRank === '0')
+  if (!incoming || !outgoing) return
+  const rearY = Math.min(...targets.map(card => card.y))
+  const middleY = targets.find(card => card.y !== 0 && card.y !== rearY)?.y ?? rearY * .66
+  const pose = (card: StackCardTarget, rank: number) => ({
+    xPercent: [0, -6, 6, -3][rank] ?? 0,
+    y: rank === 0 ? 0 : rank === 1 ? middleY : rank === 2 ? rearY * .74 : rearY,
+    rotation: [0, -3, 3, 2][rank] ?? 0,
+    rotationX: 0, scale: 1, autoAlpha: rank < 4 ? 1 : 0,
+  })
+  const ordered = [incoming, ...targets.filter(card => card !== incoming)]
+  const settle = () => ordered.forEach((card, rank) => {
+    gsap.set(card.element, { ...pose(card, rank), zIndex: targets.length - rank, attr: { 'data-stack-rank': rank }, clearProps: 'willChange' })
+    if (card.detail) gsap.set(card.detail, { opacity: rank === 0 ? 1 : 0 })
+    if (card.preview) gsap.set(card.preview, { opacity: rank === 0 ? 0 : 1 })
+  })
+  if (instant || skipMotion()) { settle(); return }
+
+  const timeline = gsap.timeline({ onComplete: settle })
+  const rear = targets.find(card => card !== incoming && card !== outgoing && card.y < 0) ?? targets[1] ?? outgoing
+  const prepare = DUR.press
+  const enter = prepare + 0.04
+  gsap.set(targets.map(card => card.element), { willChange: 'transform,opacity', transformOrigin: '50% 0%', transformPerspective: 900 })
+  timeline.to(outgoing.element, { y: outgoing.y + 12, xPercent: -3, rotation: -2, scale: .97, autoAlpha: .18, duration: DUR.overlayOut, ease: EASE.exit }, 0)
+  if (outgoing.detail) timeline.to(outgoing.detail, { opacity: 0, duration: DUR.overlayOut, ease: EASE.exit }, 0)
+  if (outgoing.preview) timeline.to(outgoing.preview, { opacity: 1, duration: DUR.overlayOut, ease: EASE.exit }, 0)
+  timeline.set(incoming.element, { ...pose(incoming, 2), zIndex: targets.length + 1, autoAlpha: 1, attr: { 'data-stack-rank': 2 } }, prepare)
+  if (incoming.detail) timeline.set(incoming.detail, { opacity: 0 }, prepare)
+  if (incoming.preview) timeline.set(incoming.preview, { opacity: 1 }, prepare)
+  timeline.to(incoming.element, { ...pose(incoming, 0), duration: DUR.slide, ease: EASE.glide }, enter)
+  timeline.set(incoming.element, { zIndex: targets.length + 2, attr: { 'data-stack-rank': 0 } }, enter)
+  if (incoming.detail) timeline.to(incoming.detail, { opacity: 1, duration: DUR.overlayIn, ease: EASE.reveal }, enter + .08)
+  if (incoming.preview) timeline.to(incoming.preview, { opacity: 0, duration: DUR.overlayIn, ease: EASE.reveal }, enter + .08)
+  if (rear && rear !== incoming && rear !== outgoing) timeline.to(rear.element, { ...pose(rear, 2), duration: DUR.slide, ease: EASE.glide }, enter)
+  return timeline
 }
 
 export { gsap }

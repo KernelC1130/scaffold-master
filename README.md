@@ -100,6 +100,8 @@ python3 scripts/session-regression.py
 
 浏览器回归脚本只创建并删除自己生成的测试角色和用户，不清空表；管理员密码可通过 `SCAFFOLD_TEST_PASSWORD` 覆盖。测试与构建成功不能代替业务页面验收。
 
+用户列表 / 看板切换的视觉回归：启动前端预览后，在可解析 Node.js `playwright` 包且已安装 Chrome 的环境运行 `node scripts/view-switch-regression.cjs`（在 `scaffold-vue` 目录）。脚本默认访问 `http://127.0.0.1:4180`，可用 `VIEW_QA_URL` 指定地址、`VIEW_QA_BROWSER` 指定 Playwright 浏览器通道、`VIEW_QA_OUT` 指定截图与报告目录；全部 API 使用隔离夹具，拒绝写请求。覆盖双向与快速切换、刷新后保留视图、进场时切换、导航折叠和深色 / 窄屏 / 减少动态效果，并检查祖先透明度，避免仅判断元素存在而漏过空白画面。
+
 ## 许可证
 
 本项目代码采用 [MIT License](LICENSE)，允许商用、修改和分发，使用时保留版权及许可证声明。

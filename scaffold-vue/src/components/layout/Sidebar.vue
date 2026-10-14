@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Icon from '@/components/Icon.vue'
+import BrandMark from '@/components/business/BrandMark.vue'
 import { navGroups } from '@/composables/auth'
 import { appearance } from '@/composables/appearance'
 import { slideThumb } from '@/composables/motion'
@@ -41,7 +42,7 @@ watch(() => [navGroups.value, appearance.railCollapsed], () => nextTick(() => sy
 <template>
   <aside class="rail m-rail" aria-label="主导航">
     <div class="rail-brand">
-      <span class="brand-mark" aria-hidden="true"><span class="brand-dot" /></span>
+      <BrandMark />
       <div class="brand-text">
         <div class="brand-name">{{ APP.shortName }}</div>
         <div class="brand-sub">{{ APP.subtitle }}</div>

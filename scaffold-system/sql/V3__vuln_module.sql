@@ -13,9 +13,9 @@ CREATE TABLE IF NOT EXISTS vuln_asset (
     status      CHAR(1)      NOT NULL DEFAULT '0'    COMMENT '状态：0正常/1停用',
     remark      VARCHAR(500) DEFAULT NULL            COMMENT '备注',
     create_by   VARCHAR(64)  DEFAULT ''              COMMENT '创建人',
-    create_time DATETIME     DEFAULT NULL            COMMENT '创建时间',
+    create_time DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_by   VARCHAR(64)  DEFAULT ''              COMMENT '更新人',
-    update_time DATETIME     DEFAULT NULL            COMMENT '更新时间',
+    update_time DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id),
     KEY idx_vuln_asset_ip (asset_ip)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '资产表';
@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS vuln_vulnerability (
     found_time  DATE         DEFAULT NULL            COMMENT '发现日期',
     remark      VARCHAR(500) DEFAULT NULL            COMMENT '备注',
     create_by   VARCHAR(64)  DEFAULT ''              COMMENT '创建人',
-    create_time DATETIME     DEFAULT NULL            COMMENT '创建时间',
+    create_time DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_by   VARCHAR(64)  DEFAULT ''              COMMENT '更新人',
-    update_time DATETIME     DEFAULT NULL            COMMENT '更新时间',
+    update_time DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id),
     KEY idx_vuln_vuln_asset (asset_id),
     KEY idx_vuln_vuln_status (vuln_status)
@@ -51,9 +51,9 @@ CREATE TABLE IF NOT EXISTS vuln_repair_task (
     verify_remark VARCHAR(500) DEFAULT NULL            COMMENT '验证意见（复测通过/打回时必填）',
     remark        VARCHAR(500) DEFAULT NULL            COMMENT '备注',
     create_by     VARCHAR(64)  DEFAULT ''              COMMENT '创建人',
-    create_time   DATETIME     DEFAULT NULL            COMMENT '创建时间',
+    create_time   DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_by     VARCHAR(64)  DEFAULT ''              COMMENT '更新人',
-    update_time   DATETIME     DEFAULT NULL            COMMENT '更新时间',
+    update_time   DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id),
     KEY idx_vuln_task_vuln (vuln_id),
     KEY idx_vuln_task_handler (handler_id)

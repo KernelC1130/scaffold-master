@@ -17,21 +17,21 @@
   display: grid;
   grid-template-columns: var(--rail-w) minmax(0, 1fr);
   overflow: clip;
-  border: 10px solid var(--frame);
-  border-radius: 38px;
+  border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  border-radius: 30px;
   /* 画布：两团静态漫射光，不参与动画 */
   background:
     radial-gradient(55% 45% at 92% 0%, var(--ambient-a), transparent 70%),
     radial-gradient(45% 40% at 20% 100%, var(--ambient-b), transparent 70%),
     var(--canvas);
-  box-shadow: 0 24px 70px rgba(17, 23, 27, .24), 0 3px 12px rgba(17, 23, 27, .16);
+  box-shadow: 0 18px 48px rgba(17, 23, 27, .14), 0 3px 10px rgba(17, 23, 27, .1);
 }
 .app-frame.is-collapsed { --rail-w: 76px; }
 
 /* 入场兜底隐藏：GSAP 就位前不让元素以终态闪现 */
-.app-frame:not(.is-entrance-ready) .rail-brand,
-.app-frame:not(.is-entrance-ready) .nav-group,
-.app-frame:not(.is-entrance-ready) .topbar > * { opacity: 0; }
+.app-frame:not([data-entrance-ready="true"]) .rail-brand,
+.app-frame:not([data-entrance-ready="true"]) .nav-group,
+.app-frame:not([data-entrance-ready="true"]) .topbar > * { opacity: 0; }
 
 /* ── 导航轨 ─────────────────────────────────────────────────── */
 .rail {
@@ -61,13 +61,6 @@
   color: #fff;
   background: var(--dark-surface);
   box-shadow: 0 1px 3px rgba(14, 18, 20, .16), 0 6px 16px rgba(14, 18, 20, .16), inset 0 1px 0 rgba(255, 255, 255, .12);
-}
-.brand-mark .brand-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  background: var(--lime);
-  box-shadow: 0 0 0 4px rgba(130, 221, 45, .2), 0 0 12px rgba(130, 221, 45, .6);
 }
 .brand-text { min-width: 0; }
 .brand-name { font-size: 15px; font-weight: 720; letter-spacing: -.02em; white-space: nowrap; }
@@ -259,7 +252,7 @@
 }
 
 /* 页面入场兜底隐藏 */
-.page:not(.is-entrance-ready) .reveal { opacity: 0; }
+.page:not([data-entrance-ready="true"]) .reveal { opacity: 0; }
 
 /* ── 页面头 ─────────────────────────────────────────────────── */
 .page-head {
@@ -297,7 +290,11 @@
   .list-page.is-fit-viewport { height: 100%; min-height: 0; display: flex; flex-direction: column; padding-bottom: 24px; }
   .list-page.is-fit-viewport > .page-head { flex: none; }
   .list-page.is-fit-viewport > .list-page-body { flex: 1; min-height: 0; display: flex; }
-  .list-page.is-fit-viewport > .list-page-body.split { display: grid; align-items: stretch; }
+  .list-page.is-fit-viewport > .list-page-body.split { display: grid; grid-template-columns: clamp(200px, 18vw, 256px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+  .list-page.is-fit-viewport .split-side { position: static; min-height: 0; max-height: none; display: flex; flex-direction: column; overflow: hidden; }
+  .list-page.is-fit-viewport .split-side > .dept-tree { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .list-page.is-fit-viewport .dept-tree > .split-side-head { flex: none; }
+  .list-page.is-fit-viewport .dept-tree > .tree { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
   .list-page.is-fit-viewport .list-page-stack { flex: 1; min-width: 0; min-height: 0; }
   .list-page.is-fit-viewport .list-page-stack > .search-form { flex: none; }
   .list-page.is-fit-viewport .search-form .field { width: auto; flex: 1 1 160px; }

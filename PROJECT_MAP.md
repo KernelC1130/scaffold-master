@@ -14,6 +14,7 @@
 - 配置：`scaffold-system/scaffold-admin/src/main/resources/application.yml`、`application-dev.yml`；前端代理：`scaffold-vue/vite.config.ts`。
 - 数据库初始化：`scaffold-system/sql/V1__init_schema.sql`、`V2__seed_data.sql`；开发工具：`scaffold-admin/src/main/java/com/scaffold/admin/util/DbInit.java`。
 - 入口规范：`README.md`、`AGENTS.md`、`DESIGN.md`；建筑与工作流已移除。
+- 登录品牌设计采样：`scaffold-vue/samples/login-brand.html` → `LoginBrandSample.vue` + `LoginBrandArchive.vue` → 公共 `motion.ts` 的 `turnStackCards`（卡片由后往前翻落），由前端 Vite 服务访问 `/samples/login-brand.html`。四档案使用固定的天蓝 / 沙金 / 丁香 / 薄荷分类色，支持流程切换、动画中改选、深浅色、减少动态和手机预览；独立于生产路由，未接入认证接口。正式接入须保留线上登录框原有入场、指针倾斜 / 光效及登录成功动效。
 
 ## 二、业务术语词典
 
@@ -50,7 +51,7 @@
 | 前端功能 | 路由 | 页面文件 | API 文件 / 后端模块 | 来源 |
 | --- | --- | --- | --- | --- |
 | 登录（全幅画布、神经网络背景、时钟、服务健康） | `/login` | `views/Login.vue` + `components/NeuralNet.vue` | `api/auth.ts`、`portal.ts` 的 `health`；认证 | 已确认 |
-| 工作台（主次布局 + 会话首次开场 + 模块网络卡） | `/dashboard` | `views/Dashboard.vue` | `api/portal.ts`；工作台；有日志权限时加载当日泳道 | 已确认 |
+| 工作台（安全态势 + 主次布局 + 会话首次开场） | `/dashboard` | `views/Dashboard.vue` | `api/portal.ts`；安全态势通过 `api/vuln.ts` 加载汇总与月度数据，复用 `BarChart` 月份选择；有日志权限时加载当日泳道 | 已确认 |
 | 用户（列表 / 看板） | `/system/user` | `views/system/Users.vue` | `api/system.ts`；系统管理 | 已确认 |
 | 角色（列表 / 权限矩阵 / 溯源·图谱舞台） | `/system/role` | `views/system/Roles.vue` + `components/business/PermissionTrace.vue` | 同上 + `permissions/graph` | 已确认 |
 | 菜单（表格 / 导航星系·图谱舞台 + 侧栏预览） | `/system/menu` | `views/system/Menus.vue` + `components/business/MenuStarMap.vue` | 同上 | 已确认 |
@@ -68,11 +69,11 @@
 
 | 公共能力 | 文件入口 | 用途 |
 | --- | --- | --- |
-| 列表模板与数据状态 | `components/business/ListPage.vue`、`components/ui/DataTable.vue`、`composables/list.ts` | 查询、重置、分页、导出、勾选及树列表；`fitViewport`（填满可视工作区）由资产、漏洞、修复工单页启用，固定查询与分页、表格内部滚动，`DataTable.scrollable`（可滚动数据区）保留吸顶表头并在数据刷新后回到首行，批量操作置于面板工具栏；窄屏 / 低窗口自然滚动。其他列表保留底部批量浮条；`altView` + `#alt` 换成画布 / 看板 / 矩阵 |
+| 列表模板与数据状态 | `components/business/ListPage.vue`、`components/ui/DataTable.vue`、`composables/list.ts` | 查询、重置、分页、导出、勾选及树列表；`fitViewport`（填满可视工作区）由资产、漏洞、修复工单及用户页启用，固定查询与分页、表格内部滚动；左侧 `DeptTree` 的搜索框固定、节点独立滚动。`DataTable.scrollable`（可滚动数据区）保留吸顶表头并在数据刷新后回到首行，批量操作置于面板工具栏；窄屏 / 低窗口自然滚动。其他列表保留底部批量浮条；`altView` + `#alt` 换成画布 / 看板 / 矩阵 |
 | 版式组件 | `components/business/OrgCanvas.vue`、`BoardView.vue`、`PermissionMatrix.vue`、`PostLadder.vue`、`PermissionTrace.vue`、`MenuStarMap.vue`、`DictSwatchbook.vue`、`GeneratorPipeline.vue`、`composables/view.ts` | 组织画布、看板分列（拖拽 + 键盘移动）、角色权限矩阵、岗位阶梯、权限溯源（三层下钻）、导航星系（三层下钻）、字典样本册、生成流水线、按页面记忆视图 |
 | 图谱与问答 | `components/charts/RelationGraph.vue`、`composables/neural.ts`、`components/business/InsightPanel.vue`、`AskDock.vue`、`composables/ask.ts`、`composables/viewport.ts`、`components/NeuralNet.vue` | 通用关系图（弹簧布局变形、脉冲、扇形触须；`variant="stage"` 为珍珠玻璃图谱舞台）、舞台 Canvas 绘制件（珍珠球、玻璃刻度表盘、连线与脉冲、背景网络、轨道、台阶光柱）、分析栏、问答坞、本地规则问答引擎、共享视口平移缩放、登录神经网络背景 |
 | 仪器化组件 | `components/ui/Metric.vue`、`Odometer.vue`、`SectionLabel.vue`、`SpecPlate.vue`、`DeltaPill.vue`、`Ruler.vue`、`HoverCard.vue` | 显示级读数、逐位滚动、编号眉标、规格铭牌、环比、刻度尺、悬停名片 |
-| 图表 | `components/charts/TrendChart.vue`、`BarChart.vue`、`TickRing.vue`、`Swimlane.vue` | 自绘 SVG：形变折线与准星（稀疏数据茎叶点）、柱状、刻度环、时间轴泳道（默认聚焦有操作时段）；工作台数据权限为页内占比条 |
+| 图表 | `components/charts/TrendChart.vue`、`BarChart.vue`、`TickRing.vue`、`Swimlane.vue` | 自绘 SVG / CSS：形变折线与准星（稀疏数据茎叶点）、柱状、刻度环、时间轴泳道；`BarChart` 默认保留紧凑模式，`variant="columns"` 为带整数刻度与柱顶读数的可选择列，`highlight` 控制选择、`select(index)` 返回选中下标、`fullLabels` 提供完整无障碍标签；工作台数据权限为页内占比条 |
 | 表单与引用选项 | `components/business/FormDialog.vue`、`DictSelect.vue`、`DeptTree.vue`、`DeptSelect.vue`、`UserSelect.vue` | 统一表单、字典、部门、用户选择 |
 | 权限 | `components/business/PermissionButton.vue`、`directives/permission.ts` | 以当前用户权限控制操作显示 |
 | 外壳 | `components/layout/AppShell.vue`、`Sidebar.vue`、`Topbar.vue`、`CommandPalette.vue` | 导航、移动侧栏、滚动凝结顶栏、命令面板（最近访问 / 页面 / 用户 / 动作）与账号操作 |
@@ -141,7 +142,7 @@
 | 菜单可见但接口返回 403 | `PermissionAspect`、`SystemPermissionResolver` | 当前角色 / 按钮权限、用户状态；引用选项使用专用接口 | 已确认 |
 | 部门筛选漏掉下级 / 数据范围错误 | `SystemManagementMapper`、`SystemDataScopeResolver` | `ancestors`、部门范围、分页和导出是否同口径 | 已确认 |
 | 时间差 8 小时 / 连接时区异常 | `application-dev.yml`、`DbInit` | Hikari 连接属性、`DB_TIMEZONE`、MySQL 会话 `NOW()` | 已确认 |
-| 页面过渡空白 / 后台浮层未关闭 | `composables/motion.ts` | Vue 过渡完成回调、后台状态与减少动效终态 | 已确认 |
+| 页面过渡或视图切换空白 / 后台浮层未关闭 | `composables/motion.ts`、`styles/layout.css`、`styles/pages.css` | Vue 过渡完成回调、后台状态与减少动效终态；页面 / 外壳使用独立的 `data-entrance-ready` 显示标记，避免动态布局类覆盖。`scripts/view-switch-regression.cjs` 检查列表 / 看板往返与祖先透明度 | 已确认 |
 | 读数停在 0 / 动画停在中途 | `Odometer.vue`、`motion.ts` | 后台标签页 rAF 不触发：读数用定时器兜底，GSAP 补间在切到后台时走完 | 已确认 |
 | 登录成功后停在对勾圆环 | `Login.vue` | 进入外壳的导航被取消（会话过期等）时须恢复登录按钮 | 已确认 |
 | 抽屉内确认框被挡 / Escape 连带关闭 | `focus.ts`、`Modal.vue`、`Drawer.vue`、`Select.vue` | 打开顺序、公共层级、最上层焦点与事件 | 已确认 |

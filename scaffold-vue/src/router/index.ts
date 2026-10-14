@@ -12,6 +12,7 @@ const staticRoutes: RouteRecordRaw[] = [
     name: 'root',
     component: AppShell,
     children: [
+      { path: 'index', redirect: { path: '/dashboard' } }, // 旧平台（RuoYi）首页路径，老书签兼容
       { path: 'no-access', name: 'no-access', component: () => import('@/views/NoAccess.vue'), meta: { title: '暂未分配菜单' } },
       { path: ':pathMatch(.*)*', name: 'not-found', component: () => import('@/views/NotFound.vue'), meta: { title: '页面不存在' } },
     ],

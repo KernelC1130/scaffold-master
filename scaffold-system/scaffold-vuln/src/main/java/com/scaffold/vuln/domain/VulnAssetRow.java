@@ -1,11 +1,10 @@
 package com.scaffold.vuln.domain;
 
-import java.time.LocalDateTime;
-
 /**
  * 资产行（vuln_asset）。
  * asset_ip IP地址；asset_name 服务/应用名；owner 负责人；
- * risk_level 风险等级 0低/1中/2高（由关联漏洞自动计算）；status 状态 0正常/1停用。
+ * risk_level 风险等级 0低/1中/2高（由关联漏洞自动计算）；status 状态 0正常/1停用；
+ * create_time / update_time 由 SQL DATE_FORMAT 为 yyyy-MM-dd HH:mm:ss 展示串。
  */
 public class VulnAssetRow {
 
@@ -16,8 +15,8 @@ public class VulnAssetRow {
     private String riskLevel;
     private String status;
     private String remark;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
+    private String createTime;
+    private String updateTime;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -33,8 +32,8 @@ public class VulnAssetRow {
     public void setStatus(String status) { this.status = status; }
     public String getRemark() { return remark; }
     public void setRemark(String remark) { this.remark = remark; }
-    public LocalDateTime getCreateTime() { return createTime; }
-    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
-    public LocalDateTime getUpdateTime() { return updateTime; }
-    public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
+    public String getCreateTime() { return createTime; }
+    public void setCreateTime(String createTime) { this.createTime = createTime; }
+    public String getUpdateTime() { return updateTime; }
+    public void setUpdateTime(String updateTime) { this.updateTime = updateTime; }
 }

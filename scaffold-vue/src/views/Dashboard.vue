@@ -120,27 +120,43 @@ async function loadTimeline() {
 /* ── 安全态势（漏洞平台）：统计接口无权限或失败时静默隐藏整块 ── */
 const vulnSummary = ref<{ totalAssets: number; openVulns: number; highRiskOpen: number; weekTasks: number } | null>(null)
 const vulnMonthly = ref<Array<{ name: string; value: number }>>([])
-const vulnRiskRaw = ref<Array<{ name: string; value: number }>>([])
-const vulnTop = ref<Array<{ name: string; value: number }>>([])
-const riskLabels = ['低', '中', '高']
-const riskValues = computed(() => riskLabels.map(l => vulnRiskRaw.value.find(i => i.name === l)?.value ?? 0))
-const topTotal = computed(() => vulnTop.value.reduce((a, b) => a + b.value, 0) || 1)
-const topItems = computed(() => vulnTop.value.map((i, k) => ({ ...i, w: (i.value / Math.max(1, ...vulnTop.value.map(x => x.value))) * 100, pct: Math.round((i.value / topTotal.value) * 100), cat: (k % 5) + 1 })))
+const vulnMonthLabel = (name: string) => {
+  const month = name.split('-')[1]
+  return month ? `${Number(month)}月` : name
+}
+const selectedVulnMonth = ref<number | null>(null)
+const selectedVulnIndex = computed(() => {
+  if (!vulnMonthly.value.length) return -1
+  return Math.min(selectedVulnMonth.value ?? vulnMonthly.value.length - 1, vulnMonthly.value.length - 1)
+})
+const selectedVulnItem = computed(() => selectedVulnIndex.value < 0 ? null : vulnMonthly.value[selectedVulnIndex.value])
+const vulnFullMonthLabel = (name: string) => {
+  const [year, month] = name.split('-')
+  return month ? `${year} 年 ${Number(month)} 月` : name
+}
+const vulnMonthRange = computed(() => {
+  if (!vulnMonthly.value.length) return ''
+  const first = vulnMonthly.value[0].name
+  const last = vulnMonthly.value[vulnMonthly.value.length - 1].name
+  if (first === last) return vulnFullMonthLabel(first)
+  const [year, month] = first.split('-')
+  const [lastYear, lastMonth] = last.split('-')
+  return year === lastYear && month && lastMonth
+    ? `${year} 年 ${Number(month)}—${Number(lastMonth)} 月`
+    : `${vulnFullMonthLabel(first)}—${vulnFullMonthLabel(last)}`
+})
 const pageDesc = computed(() => canVuln.value ? '安全态势、系统运行概况与今日操作轨迹。' : '系统运行概况、登录脉搏与今日操作轨迹。')
 
 async function loadVuln() {
   if (!canVuln.value) return
   try {
-    const [s, monthly, risk, top] = await Promise.all([
+    const [s, monthly] = await Promise.all([
       vulnApi.statistics.summary(),
       vulnApi.statistics.vulnByMonth(),
-      vulnApi.statistics.vulnByRiskLevel(),
-      vulnApi.statistics.topRiskAssets(),
     ])
     vulnSummary.value = s
     vulnMonthly.value = monthly
-    vulnRiskRaw.value = risk
-    vulnTop.value = top
+    selectedVulnMonth.value = monthly.length ? monthly.length - 1 : null
   } catch {
     /* 态势区块失败不影响工作台其余部分 */
   }
@@ -201,75 +217,43 @@ onMounted(() => {
       </div>
     </header>
 
-    <!-- 安全态势（漏洞平台）：置顶主位，无漏洞菜单权限时整块隐藏 -->
-    <div v-if="canVuln" ref="grid" class="bento-grid">
-      <section class="bento bento-side">
-        <div class="side-top">
-          <span class="side-label">资产总数</span>
-          <span class="side-ico m-groove"><Icon name="database" :size="16" /></span>
+    <!-- 安全态势（漏洞平台）：2×2 指标 + 月度柱状图，无权限整块隐藏 -->
+    <section v-if="canVuln" class="bento bento-wide vuln-board m-glow" @pointermove="trackGlow">
+      <span class="glow-layer" aria-hidden="true" />
+      <div class="hero-head">
+        <div class="vuln-title"><Icon name="shield" :size="20" /><h2>安全态势</h2></div>
+        <div class="vuln-links">
+          <button v-if="pathOf('vuln/asset/index')" type="button" class="pill-btn" @click="router.push(pathOf('vuln/asset/index'))">资产管理 <span aria-hidden="true">↗</span></button>
+          <button v-if="pathOf('vuln/vuln/index')" type="button" class="pill-btn" @click="router.push(pathOf('vuln/vuln/index'))">漏洞管理 <span aria-hidden="true">↗</span></button>
+          <button v-if="pathOf('vuln/repair/index')" type="button" class="pill-btn" @click="router.push(pathOf('vuln/repair/index'))">修复工单 <span aria-hidden="true">↗</span></button>
         </div>
-        <Metric :value="vulnSummary?.totalAssets" unit="台" size="l" />
-        <div class="side-foot"><span class="muted">纳管资产</span></div>
-      </section>
-      <section class="bento bento-side">
-        <div class="side-top">
-          <span class="side-label">未闭合漏洞</span>
-          <span class="side-ico m-groove"><Icon name="alert" :size="16" /></span>
+      </div>
+      <div class="hero-body">
+        <dl class="vuln-metrics">
+          <div class="vuln-metric"><dt>资产总数</dt><dd class="tnum">{{ vulnSummary?.totalAssets ?? '—' }}<small>台</small></dd><p>已纳入管理的资产</p></div>
+          <div class="vuln-metric"><dt>未闭合漏洞</dt><dd class="tnum">{{ vulnSummary?.openVulns ?? '—' }}<small>个</small></dd><p>新发现与修复中</p></div>
+          <div class="vuln-metric is-risk"><dt>高风险未闭合</dt><dd class="tnum">{{ vulnSummary?.highRiskOpen ?? '—' }}<small>个</small></dd><p>优先跟进修复</p></div>
+          <div class="vuln-metric"><dt>近 7 天新工单</dt><dd class="tnum">{{ vulnSummary?.weekTasks ?? '—' }}<small>单</small></dd><p>最近 7 天创建</p></div>
+        </dl>
+        <div class="vuln-chart">
+          <div class="vuln-chart-caption"><h3>每月发现漏洞数</h3><span v-if="vulnMonthly.length">{{ vulnMonthRange }} · 个</span></div>
+          <BarChart v-if="vulnMonthly.length"
+            variant="columns"
+            :values="vulnMonthly.map(item => Number(item.value))"
+            :labels="vulnMonthly.map(item => vulnMonthLabel(item.name))"
+            :full-labels="vulnMonthly.map(item => vulnFullMonthLabel(item.name))"
+            :highlight="selectedVulnIndex"
+            :height="172"
+            unit=" 个"
+            @select="selectedVulnMonth = $event"
+          />
+          <EmptyState v-else title="暂无漏洞数据" icon="chart" />
+          <div v-if="selectedVulnItem" class="vuln-chart-detail"><span>按发现日期统计</span><output aria-live="polite">{{ vulnFullMonthLabel(selectedVulnItem.name) }} · 发现 {{ selectedVulnItem.value }} 个</output></div>
         </div>
-        <Metric :value="vulnSummary?.openVulns" unit="个" size="l" />
-        <div class="side-foot"><span class="muted">新发现 + 修复中</span></div>
-      </section>
-      <section class="bento bento-side">
-        <div class="side-top">
-          <span class="side-label">高风险未闭合</span>
-          <span class="side-ico m-groove"><Icon name="ban" :size="16" /></span>
-        </div>
-        <Metric :value="vulnSummary?.highRiskOpen" unit="个" size="l" />
-        <div class="side-foot"><span class="muted">风险敞口</span></div>
-      </section>
-      <section class="bento bento-side">
-        <div class="side-top">
-          <span class="side-label">本周新工单</span>
-          <span class="side-ico m-groove"><Icon name="board" :size="16" /></span>
-        </div>
-        <Metric :value="vulnSummary?.weekTasks" unit="单" size="l" />
-        <div class="side-foot"><span class="muted">近 7 天</span></div>
-      </section>
+      </div>
+    </section>
 
-      <section class="bento bento-third">
-        <div class="bento-head">
-          <SectionLabel title="漏洞发现趋势" />
-          <span class="bento-meta">按月</span>
-        </div>
-        <TrendChart v-if="vulnMonthly.length" :values="vulnMonthly.map(i => i.value)" :labels="vulnMonthly.map(i => i.name)" :height="132" unit=" 个" tone="blue" />
-        <EmptyState v-else title="暂无漏洞数据" icon="chart" />
-      </section>
-
-      <section class="bento bento-third">
-        <div class="bento-head">
-          <SectionLabel title="风险等级分布" />
-          <span class="bento-meta">全部漏洞</span>
-        </div>
-        <BarChart :values="riskValues" :labels="riskLabels" :highlight="riskValues.length ? riskValues.length - 1 : null" unit=" 个" />
-      </section>
-
-      <section class="bento bento-third">
-        <div class="bento-head">
-          <SectionLabel title="高危资产 TOP5" />
-          <span class="bento-meta">按高危漏洞数</span>
-        </div>
-        <ul v-if="topItems.length" class="share-list">
-          <li v-for="item in topItems" :key="item.name" :class="`cat-${item.cat}`">
-            <span class="share-label">{{ item.name }}</span>
-            <span class="share-track"><i :style="{ width: `${item.w}%` }" /></span>
-            <span class="share-value tnum">{{ item.value }}<small> 个 · {{ item.pct }}%</small></span>
-          </li>
-        </ul>
-        <EmptyState v-else title="暂无高风险漏洞" icon="check" />
-      </section>
-    </div>
-
-    <div ref="grid" v-else class="bento-grid">
+    <div ref="grid" class="bento-grid">
       <!-- 01 主卡：登录脉搏 -->
       <section class="bento bento-hero m-glow" @pointermove="trackGlow">
         <span class="glow-layer" aria-hidden="true" />
@@ -378,11 +362,11 @@ onMounted(() => {
       </section>
 
       <!-- 最近登录 -->
-      <section :class="['bento', canTimeline ? 'bento-narrow' : 'bento-half']">
+      <section :class="['bento', 'dash-login-card', canTimeline ? 'bento-narrow' : 'bento-half']">
         <div class="bento-head">
           <SectionLabel title="最近登录" />
         </div>
-        <div class="activity-list">
+        <div class="activity-list dash-login-list">
           <div v-for="(a, i) in summary?.activities ?? []" :key="i" class="activity">
             <Avatar :name="String(a.who)" :size="30" />
             <div class="activity-main">

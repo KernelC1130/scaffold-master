@@ -297,6 +297,7 @@ async function batchRemove(ids: (string | number)[]) {
     :list="list"
     :columns="columns"
     selectable
+    fit-viewport
     :min-width="1040"
     :alt-view="view === 'board'"
   >

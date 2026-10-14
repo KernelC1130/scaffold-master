@@ -2,11 +2,11 @@
    品牌与全局配置：换品牌只改这里。
    ============================================================ */
 export const APP = Object.freeze({
-  name: '通用后台管理系统',
-  shortName: '管理后台',
-  subtitle: 'Admin Console',
+  name: '资产漏洞管理平台',
+  shortName: '漏洞管理平台',
+  subtitle: 'Vuln Manager',
   version: 'v1.0.0',
-  copyright: `© ${new Date().getFullYear()} 通用后台管理系统`,
+  copyright: `© ${new Date().getFullYear()} 资产漏洞管理平台`,
 })
 
 /* ── 导航 ─────────────────────────────────────────────────── */

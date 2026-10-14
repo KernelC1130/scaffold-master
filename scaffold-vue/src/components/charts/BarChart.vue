@@ -11,17 +11,32 @@ const props = withDefaults(defineProps<{
   highlight?: number | null
   height?: number
   unit?: string
+  /** columns：带数值刻度、柱顶读数和可选择列；compact 保留原紧凑图。 */
+  variant?: 'compact' | 'columns'
+  /** 完整标签用于无障碍读数，横轴仍显示 labels 简写。 */
+  fullLabels?: string[]
 }>(), {
   failed: () => [],
   highlight: null,
   height: 168,
   unit: '',
+  variant: 'compact',
+  fullLabels: () => [],
 })
+const emit = defineEmits<{ (event: 'select', index: number): void }>()
 
 const bars = ref<HTMLElement | null>(null)
 const hover = ref<number | null>(null)
 const max = computed(() => Math.max(1, ...props.values))
 const peakIndex = computed(() => props.values.indexOf(Math.max(...props.values)))
+const columnScale = computed(() => {
+  const raw = max.value * 1.15 / 3
+  const magnitude = 10 ** Math.floor(Math.log10(raw))
+  const ratio = raw / magnitude
+  const step = Math.max(1, (ratio <= 1 ? 1 : ratio <= 2 ? 2 : ratio <= 5 ? 5 : 10) * magnitude)
+  const limit = Math.ceil(max.value * 1.15 / step) * step
+  return { max: limit, ticks: Array.from({ length: limit / step + 1 }, (_, i) => i * step) }
+})
 
 function grow() {
   const list = bars.value?.querySelectorAll<HTMLElement>('.bar-col')
@@ -39,7 +54,22 @@ onBeforeUnmount(() => gsap.killTweensOf(bars.value?.querySelectorAll('.bar-col')
 </script>
 
 <template>
-  <div class="bars" :style="{ height: `${height}px` }" @pointerleave="hover = null">
+  <div v-if="variant === 'columns'" class="column-chart" role="group" aria-label="可选择柱状图">
+    <div class="column-chart-inner" :style="{ minWidth: `${values.length * 48 + 32}px` }">
+      <div class="column-chart-plot" :style="{ height: `${height}px` }">
+        <div class="column-chart-grid" aria-hidden="true">
+          <div v-for="tick in columnScale.ticks" :key="tick" class="column-chart-tick" :class="{ 'is-baseline': tick === 0 }" :style="{ bottom: `${tick / columnScale.max * 100}%` }"><span>{{ tick }}</span></div>
+        </div>
+        <div class="column-chart-columns" :style="{ gridTemplateColumns: `repeat(${Math.max(1, values.length)}, minmax(0, 1fr))` }">
+          <button v-for="(value, index) in values" :key="index" type="button" class="column-chart-slot" :aria-pressed="highlight === index" :aria-label="`${fullLabels[index] ?? labels[index]}，${value}${unit}`" @click="emit('select', index)">
+            <span class="column-chart-bar" :style="{ height: `${Math.max(0, value) / columnScale.max * 100}%` }"><span class="column-chart-value tnum">{{ value }}</span></span>
+            <span class="column-chart-label">{{ labels[index] }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div v-else class="bars" :style="{ height: `${height}px` }" @pointerleave="hover = null">
     <div ref="bars" class="bars-plot" role="img" :aria-label="`柱状图，最高 ${Math.max(0, ...values)}${unit}`">
       <div
         v-for="(v, i) in values"

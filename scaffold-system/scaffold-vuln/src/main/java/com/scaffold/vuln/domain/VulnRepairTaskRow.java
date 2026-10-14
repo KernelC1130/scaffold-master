@@ -1,7 +1,6 @@
 package com.scaffold.vuln.domain;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * 修复工单行（vuln_repair_task）。
@@ -18,7 +17,7 @@ public class VulnRepairTaskRow {
     private String priority;
     private String progressDesc;
     private LocalDate planTime;
-    private LocalDateTime finishTime;
+    private String finishTime;
     private Long verifierId;
     private String verifyRemark;
     private String remark;
@@ -28,8 +27,8 @@ public class VulnRepairTaskRow {
     private String assetIp;
     private String handlerName;
     private String verifierName;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
+    private String createTime;
+    private String updateTime;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -45,8 +44,8 @@ public class VulnRepairTaskRow {
     public void setProgressDesc(String progressDesc) { this.progressDesc = progressDesc; }
     public LocalDate getPlanTime() { return planTime; }
     public void setPlanTime(LocalDate planTime) { this.planTime = planTime; }
-    public LocalDateTime getFinishTime() { return finishTime; }
-    public void setFinishTime(LocalDateTime finishTime) { this.finishTime = finishTime; }
+    public String getFinishTime() { return finishTime; }
+    public void setFinishTime(String finishTime) { this.finishTime = finishTime; }
     public Long getVerifierId() { return verifierId; }
     public void setVerifierId(Long verifierId) { this.verifierId = verifierId; }
     public String getVerifyRemark() { return verifyRemark; }
@@ -65,8 +64,8 @@ public class VulnRepairTaskRow {
     public void setHandlerName(String handlerName) { this.handlerName = handlerName; }
     public String getVerifierName() { return verifierName; }
     public void setVerifierName(String verifierName) { this.verifierName = verifierName; }
-    public LocalDateTime getCreateTime() { return createTime; }
-    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
-    public LocalDateTime getUpdateTime() { return updateTime; }
-    public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
+    public String getCreateTime() { return createTime; }
+    public void setCreateTime(String createTime) { this.createTime = createTime; }
+    public String getUpdateTime() { return updateTime; }
+    public void setUpdateTime(String updateTime) { this.updateTime = updateTime; }
 }

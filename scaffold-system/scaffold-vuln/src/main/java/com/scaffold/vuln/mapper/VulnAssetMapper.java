@@ -44,8 +44,8 @@ public interface VulnAssetMapper {
                    risk_level,
                    status,
                    remark,
-                   create_time,
-                   update_time
+                   DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%s') AS create_time,
+                   DATE_FORMAT(update_time, '%Y-%m-%d %H:%i:%s') AS update_time
             FROM vuln_asset
             <where>
                 <if test="assetIp != null and assetIp != ''">AND asset_ip LIKE CONCAT('%', #{assetIp}, '%')</if>
@@ -67,7 +67,9 @@ public interface VulnAssetMapper {
     );
 
     @Select("""
-            SELECT id, asset_ip, asset_name, owner, risk_level, status, remark, create_time, update_time
+            SELECT id, asset_ip, asset_name, owner, risk_level, status, remark,
+                   DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%s') AS create_time,
+                   DATE_FORMAT(update_time, '%Y-%m-%d %H:%i:%s') AS update_time
             FROM vuln_asset
             WHERE id = #{id}
             """)

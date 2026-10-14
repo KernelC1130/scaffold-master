@@ -55,7 +55,7 @@ public interface VulnRepairTaskMapper {
                    t.priority,
                    t.progress_desc,
                    t.plan_time,
-                   t.finish_time,
+                   DATE_FORMAT(t.finish_time, '%Y-%m-%d %H:%i:%s') AS finish_time,
                    t.verifier_id,
                    t.verify_remark,
                    t.remark,
@@ -65,8 +65,8 @@ public interface VulnRepairTaskMapper {
                    a.asset_ip,
                    uh.nickname          AS handlerName,
                    uv.nickname          AS verifierName,
-                   t.create_time,
-                   t.update_time
+                   DATE_FORMAT(t.create_time, '%Y-%m-%d %H:%i:%s') AS create_time,
+                   DATE_FORMAT(t.update_time, '%Y-%m-%d %H:%i:%s') AS update_time
             """ + JOIN + """
             <where>
                 <if test="vulnId != null">AND t.vuln_id = #{vulnId}</if>
@@ -97,7 +97,7 @@ public interface VulnRepairTaskMapper {
                    t.priority,
                    t.progress_desc,
                    t.plan_time,
-                   t.finish_time,
+                   DATE_FORMAT(t.finish_time, '%Y-%m-%d %H:%i:%s') AS finish_time,
                    t.verifier_id,
                    t.verify_remark,
                    t.remark,
@@ -107,8 +107,8 @@ public interface VulnRepairTaskMapper {
                    a.asset_ip,
                    uh.nickname          AS handlerName,
                    uv.nickname          AS verifierName,
-                   t.create_time,
-                   t.update_time
+                   DATE_FORMAT(t.create_time, '%Y-%m-%d %H:%i:%s') AS create_time,
+                   DATE_FORMAT(t.update_time, '%Y-%m-%d %H:%i:%s') AS update_time
             """ + JOIN + """
             WHERE t.id = #{id}
             """)

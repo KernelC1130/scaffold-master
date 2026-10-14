@@ -19,6 +19,8 @@ const props = withDefaults(defineProps<{
   /** 节点圆点：自动（点数 ≤ 12 时全部显示，否则只显示末点） */
   dots?: boolean
   tone?: 'blue' | 'ink'
+  /** 'auto' 按稀疏规则自动；'stem' 强制茎叶形态（离散月度计数等点少数据的仪器读法） */
+  variant?: 'auto' | 'stem'
 }>(), {
   height: 220,
   unit: '',
@@ -27,6 +29,7 @@ const props = withDefaults(defineProps<{
   tone: 'blue',
   primaryLabel: '数值',
   secondaryLabel: '失败',
+  variant: 'auto',
 })
 
 const box = ref<HTMLElement | null>(null)
@@ -135,7 +138,7 @@ const xLabels = computed(() => {
   return props.labels.map((label, i) => ({ label, i })).filter(({ i }) => i % step === 0 || i === n - 1)
 })
 const showAllDots = computed(() => props.dots && props.values.length <= 12)
-const sparse = computed(() => props.values.length > 6 && props.values.filter(v => v > 0).length <= 3 && props.values.some(v => v > 0))
+const sparse = computed(() => props.variant === 'stem' || (props.values.length > 6 && props.values.filter(v => v > 0).length <= 3 && props.values.some(v => v > 0)))
 const stems = computed(() => target.value.map((p, i) => ({ ...p, i, v: props.values[i], v2: props.secondary?.[i] ?? 0, y2: props.secondary ? yAt(props.secondary[i] ?? 0) : 0 })))
 const bandRect = computed(() => {
   if (!props.band || props.values.length < 2) return null

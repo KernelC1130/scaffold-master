@@ -1,22 +1,21 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Icon from '@/components/Icon.vue'
 import Button from '@/components/ui/Button.vue'
 import Field from '@/components/ui/Field.vue'
 import TextInput from '@/components/ui/TextInput.vue'
 import Checkbox from '@/components/ui/Checkbox.vue'
-import { ApiError, authApi, portalApi } from '@/api'
-import NeuralNet from '@/components/NeuralNet.vue'
+import { ApiError, authApi } from '@/api'
+import LoginBrandPanel from '@/components/business/LoginBrandPanel.vue'
 import { login } from '@/composables/auth'
 import { EASE, afterTwoFrames, gsap, motionSkipped, prefersReducedMotion, trackGlow } from '@/composables/motion'
 import { required, validate } from '@/utils/validate'
-import { APP } from '@/data'
 
 const router = useRouter()
 const route = useRoute()
 
-const form = reactive({ username: '', password: '', captcha: '' })
+const form = reactive({ username: 'test', password: 'test123', captcha: '' }) // 预填测试账号（公开页不暴露管理员凭据）
 const errors = ref<Partial<Record<keyof typeof form, string>>>({})
 const remember = ref(true)
 const submitting = ref(false)
@@ -27,31 +26,6 @@ const captchaLoading = ref(false)
 const root = ref<HTMLElement | null>(null)
 const card = ref<HTMLElement | null>(null)
 const succeeded = ref(false)
-
-/* ── 左侧仪表：实时时钟（秒针刻度逐格推进）与服务健康 ── */
-const now = ref(new Date())
-const health = ref<{ ok: boolean; latency: number | null }>({ ok: false, latency: null })
-const clock = computed(() => now.value.toTimeString().slice(0, 8))
-const dateLine = computed(() => {
-  const d = now.value
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} · ${'SUN MON TUE WED THU FRI SAT'.split(' ')[d.getDay()]}`
-})
-const TICKS = Array.from({ length: 60 }, (_, i) => {
-  const a = (i / 60) * Math.PI * 2 - Math.PI / 2
-  const major = i % 5 === 0
-  return { i, x1: 50 + Math.cos(a) * (major ? 40 : 43), y1: 50 + Math.sin(a) * (major ? 40 : 43), x2: 50 + Math.cos(a) * 47, y2: 50 + Math.sin(a) * 47, major }
-})
-let clockTimer = 0
-
-async function probeHealth() {
-  const start = performance.now()
-  try {
-    const res = await portalApi.health()
-    health.value = { ok: res.status === 'UP', latency: Math.round(performance.now() - start) }
-  } catch {
-    health.value = { ok: false, latency: null }
-  }
-}
 
 /* ── 登录卡随指针轻倾（≤ 4°），离开回正；只在可悬停设备上启用 ── */
 let tiltX: ((v: number) => void) | null = null
@@ -70,10 +44,8 @@ function resetTilt() {
 }
 
 /* ── 登录成功三拍：按钮收拢成圆（放）→ 对勾圆环描出（结）→ 进入外壳 ── */
-const netBurst = ref(0)
 async function playSuccess() {
   succeeded.value = true
-  netBurst.value += 1
   await nextTick()
   const orb = card.value?.querySelector<HTMLElement>('.success-orb')
   if (!orb || motionSkipped()) return
@@ -87,13 +59,6 @@ async function playSuccess() {
     tl.to(orb, { scale: 1.06, duration: 0.16, ease: 'power1.out' }).to(orb, { scale: 1, duration: 0.3, ease: EASE.settle })
   })
 }
-
-const CAPABILITIES = [
-  { icon: 'role', title: '角色与按钮权限', desc: '菜单、按钮两级授权，前后端同一套权限码' },
-  { icon: 'layers', title: '数据权限', desc: '全部 / 本部门及下级 / 本部门 / 本人' },
-  { icon: 'log', title: '操作审计', desc: '登录日志与操作日志自动记录' },
-  { icon: 'code', title: '代码生成', desc: '导入数据表，生成业务模块开发骨架' },
-]
 
 async function refreshCaptcha() {
   captchaLoading.value = true
@@ -152,18 +117,15 @@ function playIntro() {
   }
   const q = (s: string) => el.querySelectorAll(s)
   intro = gsap.timeline({ paused: true, onComplete: () => { intro = null } })
-  intro.set(['.login-brand', '.hero-line', '.cap-item', '.login-card', '.login-plate', '.login-dial'].flatMap(s => [...q(s)]), { opacity: 0, y: 16 })
-  intro.set(q('.dial-tick'), { opacity: 0.15 })
+  intro.set(['.brand-top', '.brand-copy', '.journey', '.brand-footer', '.login-card'].flatMap(s => [...q(s)]), { opacity: 0, y: 16 })
   intro.add(() => el.classList.add('is-entrance-ready'))
   // 先对焦品牌 → 标题逐行落定 → 能力逐条接通 → 登录卡交付
-  intro.to(q('.login-brand'), { opacity: 1, y: 0, duration: 0.7, ease: EASE.reveal }, 0)
-  intro.to(q('.hero-line'), { opacity: 1, y: 0, duration: 0.9, ease: EASE.reveal, stagger: 0.08 }, 0.12)
-  intro.to(q('.login-dial'), { opacity: 1, y: 0, duration: 0.9, ease: EASE.reveal }, 0.2)
-  intro.to(q('.dial-tick'), { opacity: 1, duration: 0.3, ease: 'power1.out', stagger: { each: 0.008, from: 'start' } }, 0.3)
-  intro.to(q('.cap-item'), { opacity: 1, y: 0, duration: 0.7, ease: EASE.reveal, stagger: { each: 0.06, from: 'start' } }, 0.36)
-  intro.to(q('.login-plate'), { opacity: 1, y: 0, duration: 0.7, ease: EASE.reveal, stagger: 0.08 }, 0.5)
+  intro.to(q('.brand-top'), { opacity: 1, y: 0, duration: 0.7, ease: EASE.reveal }, 0)
+  intro.to(q('.brand-copy'), { opacity: 1, y: 0, duration: 0.9, ease: EASE.reveal, stagger: 0.08 }, 0.12)
+  intro.to(q('.journey'), { opacity: 1, y: 0, duration: 0.7, ease: EASE.reveal, stagger: { each: 0.06, from: 'start' } }, 0.36)
+  intro.to(q('.brand-footer'), { opacity: 1, y: 0, duration: 0.7, ease: EASE.reveal, stagger: 0.08 }, 0.5)
   intro.to(q('.login-card'), { opacity: 1, y: 0, duration: 0.8, ease: EASE.glide }, 0.22)
-  intro.add(() => gsap.set(el.querySelectorAll('.login-brand, .hero-line, .cap-item, .login-plate, .login-dial'), { clearProps: 'transform' }))
+  intro.add(() => gsap.set(el.querySelectorAll('.brand-top, .brand-copy, .journey, .brand-footer'), { clearProps: 'transform' }))
   if (seen) intro.timeScale(2.4)
   try { sessionStorage.setItem(INTRO_KEY, '1') } catch { /* 忽略 */ }
   afterTwoFrames(() => intro?.play(0))
@@ -176,8 +138,6 @@ function onVisibility() {
 
 onMounted(() => {
   refreshCaptcha()
-  probeHealth()
-  clockTimer = window.setInterval(() => { if (!document.hidden) now.value = new Date() }, 1000)
   if (card.value && window.matchMedia('(hover: hover)').matches) {
     tiltX = gsap.quickTo(card.value, 'rotationX', { duration: 0.6, ease: 'power3.out' })
     tiltY = gsap.quickTo(card.value, 'rotationY', { duration: 0.6, ease: 'power3.out' })
@@ -188,7 +148,6 @@ onMounted(() => {
   document.addEventListener('visibilitychange', onVisibility)
 })
 onBeforeUnmount(() => {
-  window.clearInterval(clockTimer)
   window.removeEventListener('pointerdown', fastForward)
   window.removeEventListener('keydown', fastForward)
   document.removeEventListener('visibilitychange', onVisibility)
@@ -197,66 +156,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="root" class="login">
-    <!-- 左：全幅深色画布 + 浮动玻璃面板 -->
-    <section class="login-canvas" aria-label="系统介绍">
-      <div class="canvas-grid" aria-hidden="true" />
-      <div class="canvas-glow" aria-hidden="true" />
-      <NeuralNet :burst-key="netBurst" />
-      <div class="login-brand">
-        <span class="brand-mark"><span class="brand-dot" /></span>
-        <div>
-          <div class="brand-name">{{ APP.name }}</div>
-          <div class="brand-sub">{{ APP.subtitle }}</div>
-        </div>
-      </div>
-
-      <div class="canvas-main">
-        <div class="canvas-copy">
-          <span class="eyebrow hero-line">通用后台底座 · {{ APP.version }}</span>
-          <h1 class="login-title">
-            <span class="hero-line">统一的后台底座，</span>
-            <span class="hero-line">专注业务本身。</span>
-          </h1>
-          <p class="login-lead hero-line">用户、角色、菜单、部门、字典与审计开箱即用，新业务模块只需关注字段与流程。</p>
-        </div>
-
-        <!-- 实时时钟：秒针对应的刻度点亮，逐秒推进（导 Conduct） -->
-        <div class="login-dial" aria-hidden="true">
-          <svg viewBox="0 0 100 100">
-            <line
-              v-for="t in TICKS"
-              :key="t.i"
-              :class="['dial-tick', { 'is-major': t.major, 'is-on': t.i <= now.getSeconds() }]"
-              :x1="t.x1" :y1="t.y1" :x2="t.x2" :y2="t.y2"
-            />
-          </svg>
-          <div class="dial-center">
-            <span class="dial-time tnum">{{ clock }}</span>
-            <span class="dial-date">{{ dateLine }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="canvas-plates">
-        <div class="login-plate is-health">
-          <span class="eyebrow">服务状态</span>
-          <span :class="['health-dot', { 'is-ok': health.ok }]" aria-hidden="true" />
-          <b>{{ health.ok ? '运行正常' : health.latency === null ? '连接中断' : '状态异常' }}</b>
-          <span class="tnum plate-sub">{{ health.latency === null ? '—' : `${health.latency} ms` }}</span>
-        </div>
-        <ul class="login-plate cap-list">
-          <li v-for="cap in CAPABILITIES" :key="cap.title" class="cap-item">
-            <span class="cap-ico"><Icon :name="cap.icon" :size="16" /></span>
-            <span>
-              <span class="cap-title">{{ cap.title }}</span>
-              <span class="cap-desc">{{ cap.desc }}</span>
-            </span>
-          </li>
-        </ul>
-      </div>
-      <div class="login-foot">{{ APP.copyright }}</div>
-    </section>
+  <div class="login-stage">
+  <div ref="root" class="login login-pearl">
+    <LoginBrandPanel />
 
     <!-- 右：登录卡 -->
     <section class="login-side" @pointermove="onTilt" @pointerleave="resetTilt">
@@ -303,4 +205,22 @@ onBeforeUnmount(() => {
       </div>
     </section>
   </div>
+  </div>
 </template>
+
+<style scoped>
+.login-stage { container-type: inline-size; background: var(--stage); }
+.login-pearl { grid-template-columns: minmax(0, 1.3fr) minmax(400px, 1fr); padding: 16px; }
+.login-pearl:not(.is-entrance-ready) :deep(.brand-top),
+.login-pearl:not(.is-entrance-ready) :deep(.brand-copy),
+.login-pearl:not(.is-entrance-ready) :deep(.journey),
+.login-pearl:not(.is-entrance-ready) :deep(.brand-footer) { opacity: 0; }
+@container (max-width: 1160px) {
+  .login-pearl { grid-template-columns: minmax(0, 1.15fr) minmax(360px, 1fr); }
+  .login-side { padding-inline: 22px; min-height: auto; }
+}
+@container (max-width: 900px) {
+  .login-pearl { display: flex; flex-direction: column; padding: 0; }
+  .login-side { padding: 0 18px 26px; min-height: auto; flex: 1; background: var(--canvas); }
+}
+</style>

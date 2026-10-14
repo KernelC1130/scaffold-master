@@ -324,7 +324,7 @@
 .quick-link:hover .quick-go { color: var(--blue); }
 
 /* 并列卡入场兜底 */
-.page:not(.is-entrance-ready) .bento { opacity: 0; }
+.page:not([data-entrance-ready="true"]) .bento { opacity: 0; }
 
 @media (max-width: 1280px) {
   .bento-hero { grid-column: 1 / -1; grid-row: auto; }
@@ -503,3 +503,42 @@
 .cmd-ask-hint { margin: 0; font-size: 11.5px; }
 .cmd-ask-results { display: flex; flex-direction: column; gap: 8px; }
 .dash-net { height: 232px; border: 0; box-shadow: none; background: none; border-radius: var(--r-lg); }
+
+/* ── 工作台 · 安全态势卡（2×2 指标 + 月度柱状图） ── */
+.vuln-board { container: security-board / inline-size; margin-bottom: 20px; padding: 26px 28px 24px; }
+.vuln-board .hero-head { align-items: center; gap: 16px; margin-bottom: 28px; }
+.vuln-title { display: flex; align-items: center; gap: 10px; }
+.vuln-title > .icon { color: var(--ink-muted); }
+.vuln-title h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.vuln-links .pill-btn { font-size: 12px; }
+.vuln-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.vuln-board .hero-body { grid-template-columns: minmax(270px, .9fr) minmax(0, 1.8fr); gap: 36px; align-items: stretch; }
+.vuln-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 22px; align-content: center; margin: 0; padding: 4px 30px 8px 0; border-right: 1px solid var(--line); }
+.vuln-metric { min-width: 0; }
+.vuln-metric dt { margin-bottom: 10px; font-size: 12px; color: var(--ink-muted); }
+.vuln-metric dd { margin: 0; font-size: 36px; line-height: 1.05; letter-spacing: -.035em; font-weight: 650; }
+.vuln-metric dd small { color: var(--ink-soft); font-size: 12px; margin-left: 6px; font-weight: 450; }
+.vuln-metric p { margin: 8px 0 0; color: var(--ink-soft); font-size: 11px; }
+.vuln-metric.is-risk dd { color: var(--red-text); }
+.vuln-chart { min-width: 0; }
+.vuln-chart-caption { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+.vuln-chart-caption h3 { margin: 0; font-size: 13px; font-weight: 650; }
+.vuln-chart-caption span { color: var(--ink-soft); font-size: 11px; }
+.vuln-chart-detail { margin-top: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; color: var(--ink-soft); font-size: 11px; }
+.vuln-chart-detail output { font-variant-numeric: tabular-nums; color: var(--ink-muted); }
+.dash-login-card { display: flex; flex-direction: column; }
+.dash-login-card > .bento-head { flex: none; }
+.dash-login-list { flex: 1 1 auto; height: 176px; min-height: 0; overflow-y: auto; }
+
+@container security-board (max-width: 704px) {
+  .vuln-board .hero-head { margin-bottom: 24px; }
+  .vuln-board .hero-body { grid-template-columns: 1fr; gap: 28px; }
+  .vuln-metrics { padding: 0 0 24px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .vuln-metric dd { font-size: 32px; }
+  .vuln-chart-caption { margin-bottom: 26px; }
+  .vuln-chart-caption { flex-wrap: wrap; }
+}
+
+@media (max-width: 760px) {
+  .vuln-board { padding: 22px; }
+}
