@@ -214,8 +214,8 @@
 .bento-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
 .bento-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); white-space: nowrap; padding-top: 2px; }
 
-/* 主卡：青柠到珍珠白的渐变面（守住语义色：青柠 = 状态与能力） */
-.bento-hero {
+/* 主视觉卡（安全态势）：青柠到珍珠白的渐变面（守住语义色：青柠 = 状态与能力） */
+.vuln-board {
   border-color: var(--glass-line);
   background:
     radial-gradient(120% 90% at 0% 0%, rgba(130, 221, 45, .26), transparent 58%),
@@ -223,7 +223,7 @@
     linear-gradient(150deg, #eef8e2, #f8fbf6 55%, #fbfcfb);
   box-shadow: var(--edge-strong), var(--e2);
 }
-:root[data-theme="dark"] .bento-hero {
+:root[data-theme="dark"] .vuln-board {
   background:
     radial-gradient(120% 90% at 0% 0%, rgba(130, 221, 45, .16), transparent 58%),
     linear-gradient(150deg, #1b2316, #171b1c 60%, #15191a);
