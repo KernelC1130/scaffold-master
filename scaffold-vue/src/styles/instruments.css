@@ -1103,7 +1103,7 @@ button.trace-crumb:hover { color: var(--blue); }
 .settings-control { display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 0; }
 .settings-control > .input-shell { flex: 1; }
 /* AI 分组操作：组头右侧的测试/重建按钮与状态小字 */
-.settings-group-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.settings-group-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
 .settings-group-actions { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .settings-action { border: 1px solid var(--line-strong, rgba(23,25,29,.14)); border-radius: 8px; background: var(--surface, #fff);
                    padding: 4px 12px; font: inherit; font-size: 12px; font-weight: 600; color: var(--ink, #101418);
