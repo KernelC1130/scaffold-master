@@ -224,6 +224,15 @@ public class SystemManagementService {
         return PageResult.of(booleanRows(mapper.selectConfigs(keyword, page.offset(), page.pageSize()), "builtin"), total, page.pageNum(), page.pageSize());
     }
 
+    /** 按 config_key 取参数值（未配置返回空串）；供业务模块（如 AI 模型装配）读取 */
+    public String configValueByKey(String key) {
+        return mapper.selectConfigs(key, 0, 1).stream()
+                .filter(row -> key.equals(row.get("key")))
+                .map(row -> String.valueOf(row.get("value")))
+                .findFirst()
+                .orElse("");
+    }
+
     public String exportConfigs(String keyword) {
         List<Map<String, Object>> rows = mapper.selectConfigs(keyword, 0, 5000);
         List<List<Object>> data = rows.stream()

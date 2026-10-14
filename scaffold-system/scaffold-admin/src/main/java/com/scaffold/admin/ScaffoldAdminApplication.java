@@ -2,6 +2,7 @@ package com.scaffold.admin;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.mybatis.spring.annotation.MapperScan;
 
 @MapperScan({
@@ -9,6 +10,7 @@ import org.mybatis.spring.annotation.MapperScan;
         "com.scaffold.generator.mapper",
         "com.scaffold.vuln.mapper"
 })
+@EnableScheduling
 @SpringBootApplication(scanBasePackages = "com.scaffold")
 public class ScaffoldAdminApplication {
 

@@ -58,6 +58,22 @@ public class JwtService {
         }
     }
 
+    /** 从 token 的 userId claim 取用户 ID；缺失或解析失败返回 null */
+    public Long parseUserId(String token) {
+        try {
+            Object claim = Jwts.parser()
+                    .verifyWith(secretKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .get("userId");
+            return claim instanceof Number number ? number.longValue() : null;
+        } catch (JwtException | IllegalArgumentException ex) {
+            log.debug("JWT解析失败: {}", ex.getMessage());
+            return null;
+        }
+    }
+
     public long expiresSeconds() {
         return expiresSeconds;
     }

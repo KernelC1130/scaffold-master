@@ -36,6 +36,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (activeToken && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(username, token, List.of());
+                // JWT 里的 userId 放进 details，业务层可按需取（避免每个模块查 sys_user）
+                authentication.setDetails(jwtService.parseUserId(token));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
