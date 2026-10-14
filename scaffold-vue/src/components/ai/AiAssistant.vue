@@ -575,18 +575,19 @@ body.fab-dragging { user-select: none; }
 .md-body :deep(.chat-err) { color: #d64545; margin: 0; }
 
 /* 代码块 + 工具栏 */
-.md-body :deep(.code-block) { margin: 8px 0; border-radius: 10px; overflow: hidden; background: #0f1216; border: 1px solid rgba(255,255,255,.06); }
+/* 代码块浅色（github.css 高亮主题即浅色系，深底配它曾颜色错乱） */
+.md-body :deep(.code-block) { margin: 8px 0; border-radius: 10px; overflow: hidden; background: #f6f8fa; border: 1px solid var(--line, rgba(23,25,29,.1)); }
 .md-body :deep(.code-header) { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px;
-                               background: rgba(255,255,255,.04); border-bottom: 1px solid rgba(255,255,255,.06); }
+                               background: rgba(23,25,29,.04); border-bottom: 1px solid var(--line, rgba(23,25,29,.08)); }
 .md-body :deep(.code-lang) { font-family: Consolas, ui-monospace, monospace; font-size: 10px; letter-spacing: .06em;
-                             color: rgba(255,255,255,.45); text-transform: uppercase; }
+                             color: var(--ink-faint, #9aa2ab); text-transform: uppercase; }
 .md-body :deep(.code-actions) { display: flex; gap: 4px; }
 .md-body :deep(.code-copy-btn), .md-body :deep(.code-download-btn) { border: 0; background: none; padding: 2px 6px; border-radius: 6px;
-                                     font-size: 11px; color: rgba(255,255,255,.6); cursor: pointer; }
-.md-body :deep(.code-copy-btn:hover), .md-body :deep(.code-download-btn:hover) { color: #fff; background: rgba(255,255,255,.08); }
+                                     font-size: 11px; color: var(--ink-soft, #4b5563); cursor: pointer; }
+.md-body :deep(.code-copy-btn:hover), .md-body :deep(.code-download-btn:hover) { color: var(--ink, #101418); background: rgba(23,25,29,.07); }
 .md-body :deep(.code-block pre) { margin: 0; padding: 12px 14px; overflow-x: auto; }
 .md-body :deep(.code-block code) { font-family: Consolas, ui-monospace, monospace; font-size: 12.5px; line-height: 1.65;
-                                   background: none; padding: 0; color: #e6ebf0; }
+                                   background: none; padding: 0; color: #24292f; }
 
 /* 三点动画 */
 .typing { display: inline-flex; gap: 4px; padding: 4px 0; }
