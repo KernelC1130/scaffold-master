@@ -15,9 +15,22 @@ import { required, validate } from '@/utils/validate'
 const router = useRouter()
 const route = useRoute()
 
-const form = reactive({ username: 'test', password: 'test123', captcha: '' }) // 预填测试账号（公开页不暴露管理员凭据）
+/* 登录框记忆：勾选记住登录后存下本次账号密码，下次打开/退出后回填；无记忆才预填 test 演示账号 */
+const LOGIN_HINT_KEY = 'scaffold.login-hint'
+function loadLoginHint(): { username: string; password: string; remember: boolean } {
+  try {
+    const raw = localStorage.getItem(LOGIN_HINT_KEY)
+    if (raw) {
+      const h = JSON.parse(raw) as { username?: string; password?: string }
+      if (h.username) return { username: h.username, password: h.password || '', remember: true }
+    }
+  } catch { /* 存储不可用或数据损坏，走预填 */ }
+  return { username: 'test', password: 'test123', remember: true }
+}
+const loginHint = loadLoginHint()
+const form = reactive({ username: loginHint.username, password: loginHint.password, captcha: '' })
 const errors = ref<Partial<Record<keyof typeof form, string>>>({})
-const remember = ref(true)
+const remember = ref(loginHint.remember)
 const submitting = ref(false)
 const formError = ref('')
 const captchaCode = ref('')
@@ -87,6 +100,14 @@ async function submit() {
   submitting.value = true
   try {
     await login({ username: form.username.trim(), password: form.password, captcha: form.captcha.trim(), captchaUuid: captchaUuid.value }, remember.value)
+    // 记住登录：把本次账号密码存入登录框记忆（下次打开/退出后回填）；不勾选则清除记忆
+    try {
+      if (remember.value) {
+        localStorage.setItem(LOGIN_HINT_KEY, JSON.stringify({ username: form.username.trim(), password: form.password }))
+      } else {
+        localStorage.removeItem(LOGIN_HINT_KEY)
+      }
+    } catch { /* 存储不可用，静默 */ }
     await playSuccess()
     const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') ? route.query.redirect : '/'
     const failure = await router.replace(redirect)
