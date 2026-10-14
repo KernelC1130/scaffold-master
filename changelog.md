@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-14（修复：登录页四步按钮 0↔2 死跳）
+
+- 修复 LoginBrandPanel.vue 中 `watch/onMounted/onBeforeUnmount` 整块重复两份的编辑事故：双 onMounted 导致两个同步的 3800ms 轮播定时器并存，`selected` 每 tick 净 +2，四步按钮在 0↔2（用户观感 1↔3）之间死跳，且 pickStage 只能清掉后建的定时器。删除重复块后线上验证：interval 创建次数 1，激活序列恢复 1→2→3→0 顺序循环。
+
 ## 2026-10-14（登录页品牌卡：终端联动主视觉）
 
 - 登录页品牌卡中部留白区落地「纸面终端 × 四步流程联动」主视觉（采样 `sampling-login.html` / `sampling-login-sync.html` 两轮比选，用户定联动方向并否掉深色版与居中构图）：

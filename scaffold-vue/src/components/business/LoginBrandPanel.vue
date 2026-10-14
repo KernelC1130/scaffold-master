@@ -60,16 +60,6 @@ onBeforeUnmount(() => {
   window.clearInterval(spinTimer)
 })
 
-watch(selected, renderStage)
-onMounted(() => {
-  renderStage(selected.value)
-  autoTimer = window.setInterval(() => { selected.value = (selected.value + 1) % stages.length }, 3800)
-})
-onBeforeUnmount(() => {
-  window.clearInterval(typeTimer)
-  window.clearInterval(autoTimer)
-})
-
 function pickStage(index: number) {
   selected.value = index
   window.clearInterval(autoTimer)
