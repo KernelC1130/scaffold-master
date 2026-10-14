@@ -9,6 +9,7 @@ import Checkbox from '@/components/ui/Checkbox.vue'
 import { ApiError, authApi } from '@/api'
 import LoginBrandPanel from '@/components/business/LoginBrandPanel.vue'
 import { login } from '@/composables/auth'
+import { pushToast } from '@/composables/toast'
 import { EASE, afterTwoFrames, gsap, motionSkipped, prefersReducedMotion, trackGlow } from '@/composables/motion'
 import { required, validate } from '@/utils/validate'
 
@@ -32,7 +33,6 @@ const form = reactive({ username: loginHint.username, password: loginHint.passwo
 const errors = ref<Partial<Record<keyof typeof form, string>>>({})
 const remember = ref(loginHint.remember)
 const submitting = ref(false)
-const formError = ref('')
 const captchaCode = ref('')
 const captchaUuid = ref('')
 const captchaLoading = ref(false)
@@ -82,7 +82,7 @@ async function refreshCaptcha() {
   } catch {
     captchaUuid.value = ''
     captchaCode.value = ''
-    formError.value = '无法连接服务，请确认后端已启动'
+    pushToast('无法连接服务，请确认后端已启动', 'danger')
   } finally {
     captchaLoading.value = false
   }
@@ -90,7 +90,6 @@ async function refreshCaptcha() {
 }
 
 async function submit() {
-  formError.value = ''
   errors.value = validate(form, {
     username: [required('请输入账号')],
     password: [required('请输入密码')],
@@ -115,7 +114,7 @@ async function submit() {
     if (failure || router.currentRoute.value.name === 'login') succeeded.value = false
   } catch (error) {
     succeeded.value = false
-    formError.value = error instanceof ApiError ? error.message : '登录失败，请稍后重试'
+    pushToast(error instanceof ApiError ? error.message : '登录失败，请稍后重试', 'danger')
     await refreshCaptcha()
   } finally {
     submitting.value = false
@@ -211,7 +210,6 @@ onBeforeUnmount(() => {
             <div class="login-options">
               <Checkbox v-model="remember" label="记住登录状态" />
             </div>
-            <p v-if="formError" class="login-error" role="alert"><Icon name="alert" :size="15" />{{ formError }}</p>
             <div class="login-submit-slot">
               <Button v-if="!succeeded" type="submit" variant="primary" block :loading="submitting" class="login-submit">登录</Button>
               <div v-else class="success-orb" role="status" aria-label="登录成功，正在进入">
@@ -230,6 +228,9 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+/* 登录卡的校验红字浮层化：不占布局流，卡片高度恒定（红字悬在 16px 字段间隙中） */
+.login-card .field { position: relative; }
+.login-card :deep(.field-error) { position: absolute; left: 2px; top: calc(100% - 3px); }
 .login-stage { container-type: inline-size; background: var(--stage); }
 .login-pearl { grid-template-columns: minmax(0, 1.3fr) minmax(400px, 1fr); padding: 16px; }
 .login-pearl:not(.is-entrance-ready) :deep(.brand-top),

@@ -158,16 +158,6 @@
 .captcha-code { display: inline-flex; gap: 4px; font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--ink); letter-spacing: .02em; }
 .captcha-code span { display: inline-block; }
 .login-options { display: flex; align-items: center; justify-content: space-between; }
-.login-error {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
-  border-radius: var(--r-sm);
-  font-size: 12.5px;
-  color: var(--red-text);
-  background: var(--red-soft);
-}
 .login-submit-slot { display: flex; justify-content: center; margin-top: 4px; min-height: 46px; }
 .login-submit { height: 46px; font-size: 14px; border-radius: var(--r-md); }
 .success-orb {
