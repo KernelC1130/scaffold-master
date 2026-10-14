@@ -115,7 +115,13 @@ function onFabClick() {
     return
   }
   open.value = true
-  void loadSessions()
+  // 刷新后恢复最近活跃会话（避免「对话丢失」的观感，同旧版行为）
+  void loadSessions().then(() => {
+    const latest = sessions.value[0]
+    if (latest && !currentSessionId.value) {
+      void switchSession(latest.sessionId)
+    }
+  })
 }
 
 /* ── Markdown 渲染（代码高亮）→ XSS 消毒 → 代码块包工具栏容器 ── */
