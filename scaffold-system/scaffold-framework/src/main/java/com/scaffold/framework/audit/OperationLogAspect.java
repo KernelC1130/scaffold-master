@@ -98,7 +98,10 @@ public class OperationLogAspect {
         return lower.contains("password")
                 || lower.contains("token")
                 || lower.contains("secret")
-                || lower.contains("authorization");
+                || lower.contains("authorization")
+                || lower.contains("api-key")
+                || lower.contains("api_key")
+                || lower.contains("apikey");
     }
 
     private String currentUsername() {

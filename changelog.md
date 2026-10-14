@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-14（AI 迁移预备：API Key 脱敏两处漏点）
+
+- AI 服务配置迁入 sys_config（复用参数配置页，键 ai.model.* / ai.embedding.* / weather.*，用户完成）。审计发现两层识别清单没跟上 `api-key`（连字符）键名：前端 `configValue.ts` 的 SECRET 正则与后端 `OperationLogAspect.isSensitive` 均只认 `apikey/api_key`——页面明文显示 + 改配置时 key 明文进 sys_oper_log。两处正则统一补 `api[-_]key`，前端部署 + 后端 jar 部署（备份 .bak-1014-secret）完成；验证六个键判定正确（三个 api-key → secret，base-url/host/name → text）。AI 主体迁移（Spring AI + 会话表 + VulnTools 重写）另行开工。
+
 ## 2026-10-14（修复：登录页四步按钮 0↔2 死跳）
 
 - 修复 LoginBrandPanel.vue 中 `watch/onMounted/onBeforeUnmount` 整块重复两份的编辑事故：双 onMounted 导致两个同步的 3800ms 轮播定时器并存，`selected` 每 tick 净 +2，四步按钮在 0↔2（用户观感 1↔3）之间死跳，且 pickStage 只能清掉后建的定时器。删除重复块后线上验证：interval 创建次数 1，激活序列恢复 1→2→3→0 顺序循环。

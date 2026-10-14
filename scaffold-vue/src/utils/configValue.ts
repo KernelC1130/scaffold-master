@@ -6,7 +6,7 @@ export type ConfigKind =
   | { kind: 'secret' }
   | { kind: 'text' }
 
-const SECRET = /password|passwd|secret|token|apikey|api_key|accesskey|privatekey|pwd/i
+const SECRET = /password|passwd|secret|token|apikey|api[-_]key|accesskey|privatekey|pwd/i
 
 export function inferConfigKind(key: string, value: string, remark = ''): ConfigKind {
   const v = value.trim()
