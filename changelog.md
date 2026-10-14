@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-14（AI 迁移第一批：后端对话能力）
+
+- 自旧平台（Vulnerability-Manager，1800 行 AI 模块）迁移后端对话能力至 scaffold-vuln（包 `com.scaffold.vuln.ai`）：
+  - `AiModelFactory`：Spring AI 2.0.1 ChatClient 动态装配（openai-java 4.x 凭据体系），配置三参数读 sys_config（ai.model.*，走新增的 `SystemManagementService.configValueByKey`）；**去掉旧版按天缓存改为每次重建**（构建无 IO，配置变更下一问即生效，无需失效通知）；连通性测试分型报错保留
+  - `AiChatController`：同步 + SSE 流式对话 + 会话管理（新建/列表/历史），服务端持久化最近 10 条上下文、会话归属校验；权限 `vuln:ai:chat`（super_admin 放行，普通角色待 V5 配菜单）
+  - `AiChatService` + 两 Mapper（注解 SQL）+ `AiChatCleanup`（@Scheduled 每天清理 90 天前对话）+ V4__ai_chat.sql 两表
+  - `WeatherTools`：和风天气工具迁移，fastjson2 换 Jackson；vuln pom 显式依赖 scaffold-system（读 sys_config，与旧平台 vuln→system 耦合同构）
+  - 框架增强：JwtService.parseUserId + 过滤器把 userId claim 放进 Authentication details（业务层免查库取用户 ID）
+  - 依赖：根 pom 加 spring-ai-bom 2.0.1，vuln 加 spring-ai-openai/client-chat（openai-java 为传递依赖）；**Jackson 包名坑**：旧平台 SB4 带 Jackson 3（tools.jackson），scaffold 为 Boot 3.5（com.fasterxml），Controller 照抄旧 import 导致启动失败一次
+  - 部署验证：线上 active/health 200，两表建立（本地+线上），hejian 调 AI 接口 403 权限拦截生效；admin 对话测试待前端页面
+
 ## 2026-10-14（参数配置页：secret 行等宽 + 分组名中文化）
 
 - 修复 secret 行输入框被眼睛按钮挤窄导致各行长短不齐：眼睛按钮改为绝对定位浮在输入框右内缘（input 加右 padding 腾位），全部行输入框等宽。分组名中文化：sys_config 八条 AI/天气配置的 config_name 改为「前缀-标题」格式（AI 模型服务 / 向量模型服务 / 天气服务），splitConfigName 自动按首连字符分组，零代码改动。均已部署。

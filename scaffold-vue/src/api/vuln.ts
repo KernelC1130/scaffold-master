@@ -110,6 +110,11 @@ export function createVulnApi(client: HttpClient) {
       vulnByMonth: () => client.get<Array<{ name: string; value: number }>>('/vuln/statistics/vulnByMonth'),
       topRiskAssets: () => client.get<Array<{ name: string; value: number }>>('/vuln/statistics/topRiskAssets'),
     },
+    ai: {
+      newSession: (question?: string) => client.post<{ sessionId: number; title: string }>('/vuln/ai/chat/new', { question }),
+      sessions: () => client.get<{ list: Array<{ sessionId: number; title: string; updateTime: string }> }>('/vuln/ai/chat/sessions'),
+      history: (sessionId: number) => client.get<{ list: Array<{ id: number; role: string; content: string; createTime: string }> }>(`/vuln/ai/chat/history/${sessionId}`),
+    },
   }
 }
 

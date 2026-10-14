@@ -6,6 +6,7 @@ import Topbar from './Topbar.vue'
 import CommandPalette from './CommandPalette.vue'
 import AppearanceDialog from './AppearanceDialog.vue'
 import PasswordDialog from './PasswordDialog.vue'
+import AiAssistant from '@/components/ai/AiAssistant.vue'
 import { logout } from '@/composables/auth'
 import { appearance } from '@/composables/appearance'
 import { pageEnter, pageLeave, playShellEntrance } from '@/composables/motion'
@@ -101,5 +102,6 @@ onBeforeUnmount(() => {
     <CommandPalette :open="commandOpen" @close="commandOpen = false" @action="onCommandAction" />
     <AppearanceDialog :open="appearanceOpen" @close="appearanceOpen = false" />
     <PasswordDialog :open="passwordOpen" @close="passwordOpen = false" />
+    <AiAssistant />
   </div>
 </template>
