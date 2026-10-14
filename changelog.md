@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-14（AI 迁移第三批：RAG 知识库）
+
+- 自旧平台迁移 RAG 三件套（com.scaffold.vuln.ai.rag）：`KnowledgePipeline`（knowledge 目录 .md/.txt 扫描 → 400 字符切分/50 重叠 → SimpleVectorStore 向量化 JSON 持久化 + md5 增量清单）、`EmbeddingModelProvider`（ai.embedding.* 三参数装配，硅基流动 bge-m3）、`KnowledgeTools`（searchKnowledge 工具）。管理接口 /api/vuln/ai/knowledge/{rebuild,status}（权限 vuln:ai:manage）。AiModelFactory 恢复挂载 knowledgeTools + system prompt 知识库指引。部署：scaffold-vuln.service 加 WorkingDirectory=/opt/scaffold-vuln，knowledge 目录需 ubuntu 属主（服务用户）；种子文档两篇（SQL 注入/XSS 修复指南）。端到端实测：问平台 SLA → 引用知识库回答 48 小时时限与平台约定。
+
 ## 2026-10-14（AI 迁移第二批：VulnTools 业务工具）
 
 - 新增 `VulnTools`（com.scaffold.vuln.ai）：7 个 Function Calling 工具——platformSummary（四读数总览）、listVulns/vulnStatistics、listAssets/assetStatistics、listRepairTasks/repairTaskStatistics、topRiskAssets；内部走 vuln 模块四 Mapper，返回给模型的字段精炼裁剪 + 代码值翻译中文标签，列表限 20（最大 50）并附总数说明防上下文膨胀。挂入 AiModelFactory.defaultTools。端到端实测：问「现在有多少个高危未闭合漏洞」→ 模型调用工具后回答 10（与库中数据一致）。
