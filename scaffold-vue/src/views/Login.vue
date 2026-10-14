@@ -230,7 +230,7 @@ onBeforeUnmount(() => {
 <style scoped>
 /* 登录卡的校验红字浮层化：不占布局流，卡片高度恒定（红字悬在 16px 字段间隙中） */
 .login-card .field { position: relative; }
-.login-card :deep(.field-error) { position: absolute; left: 2px; top: calc(100% - 3px); }
+.login-card :deep(.field-error) { position: absolute; left: 2px; top: calc(100% + 2px); }
 .login-stage { container-type: inline-size; background: var(--stage); }
 .login-pearl { grid-template-columns: minmax(0, 1.3fr) minmax(400px, 1fr); padding: 16px; }
 .login-pearl:not(.is-entrance-ready) :deep(.brand-top),
