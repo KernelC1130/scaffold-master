@@ -28,6 +28,8 @@ const props = withDefaults(defineProps<{
   fitViewport?: boolean
   /** 为 true 时用 #alt 插槽（画布、看板、矩阵等版式）替换查询区与表格 */
   altView?: boolean
+  /** alt 视图也参与视口固定（画布填满面板、与表格视图同底）；按页接入，画布需可伸缩 */
+  altFit?: boolean
 }>(), {
   tableTitle: '数据列表',
   rowKey: 'id',
@@ -44,7 +46,7 @@ function clearSelection() {
 </script>
 
 <template>
-  <div class="page list-page" :class="{ 'is-fit-viewport': fitViewport && !altView }">
+  <div class="page list-page" :class="{ 'is-fit-viewport': fitViewport && (!altView || altFit) }">
     <PageHeader :title="title" :desc="desc">
       <template v-if="$slots.spec" #spec><slot name="spec" /></template>
       <slot name="actions" />
@@ -113,7 +115,7 @@ function clearSelection() {
     <!-- 批量操作浮条：勾选后从底部升起（放 Discharge），#batch 插槽 API 不变 -->
     <Teleport to="body">
       <Transition :css="false" @enter="floatBarEnter" @leave="floatBarLeave">
-        <div v-if="selectable && list.selected.value.length && (!fitViewport || altView)" class="float-bar" role="region" aria-label="批量操作">
+        <div v-if="selectable && list.selected.value.length && (!fitViewport || (altView && !altFit))" class="float-bar" role="region" aria-label="批量操作">
           <span class="float-bar-count">已选 <b class="tnum">{{ list.selected.value.length }}</b> 项</span>
           <span class="float-bar-sep" aria-hidden="true" />
           <slot name="batch" :ids="list.selected.value" />

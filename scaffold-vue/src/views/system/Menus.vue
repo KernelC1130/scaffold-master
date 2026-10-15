@@ -177,6 +177,7 @@ async function remove(row: Menu) {
     :columns="columns"
     :min-width="1000"
     fit-viewport
+    alt-fit
     :alt-view="view === 'star'"
   >
     <template #alt>
