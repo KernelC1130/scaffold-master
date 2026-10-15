@@ -201,7 +201,7 @@ onBeforeUnmount(() => {
             </Field>
             <Field label="验证码" :error="errors.captcha">
               <div class="captcha-row">
-                <TextInput v-model="form.captcha" icon="shield" placeholder="请输入右侧字符" :maxlength="6" autocomplete="off" :invalid="!!errors.captcha" />
+                <TextInput v-model="form.captcha" icon="shield" placeholder="请输入计算结果" :maxlength="6" autocomplete="off" :invalid="!!errors.captcha" />
                 <button type="button" class="captcha-box m-groove" :disabled="captchaLoading" aria-label="看不清，换一张" title="看不清，换一张" @click="refreshCaptcha">
                   <img v-if="captchaImg" :src="captchaImg" class="captcha-img" alt="" />
                   <img v-if="captchaImgDark" :src="captchaImgDark" class="captcha-img captcha-img--dark" alt="" />
