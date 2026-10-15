@@ -252,6 +252,7 @@ async function savePermission() {
     :columns="columns"
     :min-width="900"
     fit-viewport
+    alt-fit
     :alt-view="view !== 'table'"
   >
     <template #alt>

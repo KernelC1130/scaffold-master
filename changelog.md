@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（alt-fit 接入角色管理矩阵/溯源）
+
+- 角色管理开 `alt-fit`：权限矩阵（.matrix 卡片 flex 填满，.mx-scroll 解除 max-height 公式改 flex 撑满，内部滚动 + sticky 表头不变）与权限溯源（.trace 纵向 flex，.trace-graph 同星图接法 height:auto + flex:1 + min-height 600px）均与表格视图同底。至此 alt-fit 接入：菜单星图、角色矩阵、角色溯源。
+
 ## 2026-10-15（ListPage alt-fit：alt 视图与表格同底）
 
 - ListPage 新增 `alt-fit` prop（默认关，按页接入）：alt 视图（星图/画布等）也参与视口固定，画布 flex 填满面板、底部与表格视图同底——此前表格视图 fit 后与 alt 画布的固定公式高度（如星图 max(620px, 100dvh-236px)）出现落差。菜单管理星图首个接入（`.starmap` 在 fit 容器内 height:auto + flex:1 + min-height 620px）；部门画布/岗位阶梯/角色矩阵/溯源等其余视图保持自然高度，待逐个评估内容滚动后再接。
