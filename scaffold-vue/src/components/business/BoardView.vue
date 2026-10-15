@@ -133,7 +133,7 @@ async function settle(state: DragState, target: BoardColumn<T> | null) {
   await nextTick()
   const landing = moved
     ? root.value?.querySelector<HTMLElement>(`[data-card="${CSS.escape(keyOf(state.item))}"]`)?.getBoundingClientRect() ?? state.origin
-    : state.origin
+    : state.card.getBoundingClientRect() // 取消回弹：占位卡实时位置（拖拽中列体滚动后 origin 快照已过期）
   const finish = () => {
     ghost.remove()
     state.card.classList.remove('is-placeholder')
