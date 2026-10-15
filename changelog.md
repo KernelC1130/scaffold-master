@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（修复：柱状图峰值读数重叠与折行）
+
+- 紧凑柱状图读数 .bar-readout 原 top:0 钉在整图顶部，高柱从标签中穿过；且绝对定位 left:50%+translate(-50%) 使 shrink-to-fit 只剩半槽宽，两位以上数字+单位折行。修复：bottom 改为按柱高动态绑定（calc(柱高% + 6px)），补 white-space:nowrap。
+
 ## 2026-10-15（验证码主题自适应）
 
 - 暗色主题下浅色底 PNG 白块违和。CaptchaService 改透明底 ARGB 双份渲染：img（深墨字符）/imgDark（浅灰字符），响应三键 {uuid, img, imgDark}；前端两张叠放，[data-theme=dark] 切显隐，字符直接浮在 m-groove 按钮表面上，深浅主题均融合。

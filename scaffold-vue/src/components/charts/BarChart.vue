@@ -77,7 +77,7 @@ onBeforeUnmount(() => gsap.killTweensOf(bars.value?.querySelectorAll('.bar-col')
         :class="['bar-slot', { 'is-hover': hover === i }]"
         @pointerenter="hover = i"
       >
-        <span v-if="hover === i || (hover === null && i === peakIndex && v > 0)" class="bar-readout tnum">{{ v }}{{ unit }}</span>
+        <span v-if="hover === i || (hover === null && i === peakIndex && v > 0)" class="bar-readout tnum" :style="{ bottom: `calc(${(v / max) * 100}% + 6px)` }">{{ v }}{{ unit }}</span>
         <div
           :class="['bar-col', { 'is-highlight': i === highlight }]"
           :style="{ height: `${Math.max(v ? 4 : 2, (v / max) * 100)}%` }"

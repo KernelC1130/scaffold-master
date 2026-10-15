@@ -253,9 +253,9 @@
 .bar-failed { position: absolute; inset: 0 0 auto 0; background: var(--red); opacity: .78; }
 .bar-readout {
   position: absolute;
-  top: 0;
   left: 50%;
   translate: -50% 0;
+  white-space: nowrap;
   font-family: var(--font-mono);
   font-size: 10.5px;
   font-weight: 650;
