@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（修复：用户看板卡片溢出琥珀列 + 看板拉齐列表页）
+
+- 用户管理看板滚动时卡片视觉溢出列背景（底部错位十几像素，成因未完全定案——静态 CSS 与隔离 harness 均无法复现）。双保险：`.board-col` 加 overflow:hidden 兜底裁切；同时按需求给看板接 alt-fit——列高改由视口约束（列区 flex 撑满 + grid-template-rows minmax(0,1fr)），退休 100dvh-300px 魔法数字（页头实际更高时即失准）。按部门/角色/状态三种分列同步受益。
+
 ## 2026-10-15（泳道气泡置顶：Teleport + fixed）
 
 - 下翻仍是治标——气泡还关在 overflow 容器里。改为 <Teleport to="body"> + position:fixed 视口坐标（onEnter 直接用块的 viewport rect，上下翻转逻辑按视口余量判断），z-index 提到 50：任何 overflow 容器都裁不到，天然顶层。

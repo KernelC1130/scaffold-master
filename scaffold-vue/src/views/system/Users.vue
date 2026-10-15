@@ -298,6 +298,7 @@ async function batchRemove(ids: (string | number)[]) {
     :columns="columns"
     selectable
     fit-viewport
+    alt-fit
     :min-width="1040"
     :alt-view="view === 'board'"
   >

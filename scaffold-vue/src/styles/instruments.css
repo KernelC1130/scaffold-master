@@ -562,6 +562,7 @@
   flex-direction: column;
   min-height: 280px;
   max-height: max(420px, calc(100dvh - 300px));
+  overflow: hidden;
   border-radius: var(--r-xl);
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--cat-bg) 34%, var(--surface-solid));
