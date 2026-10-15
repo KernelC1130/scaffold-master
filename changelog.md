@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（修复：本地过期后 401 不跳登录页）
+
+- 场景：页面开着不放，token 到达前端过期时间后 session.token() 就地清存储并返回 null，后续请求裸奔被后端 401 拒——而 http.ts 触发跳登录的条件 `token && token === tokenProvider()` 被 null 短路，handler 不触发：只弹「未认证或登录已过期」toast、列表空、停在原地（刷新前一直僵尸态）。修复：`!token` 也触发 unauthorizedHandler；`token === current` 轮换保护保留（迟到 401 不打断新会话）。http.test.ts 补裸奔 401 回归测试（5 用例全绿）。
+
 ## 2026-10-15（字典样本册卡片全局等高）
 
 - 同行 stretch 仍存在行间落差（没有 2 行标签卡的行整体偏矮）。改从源头归一：`swatch-tags` min-height 24→54px（统一预留两行标签高度），所有卡片自然等高；1 行标签的卡标签在预留区居中。不用 `grid-auto-rows: 1fr`——展开态大卡独占整行会把全部行撑到它的高度。stretch 保留作 3 行标签极端情况的兜底（退化为同行拉伸）。

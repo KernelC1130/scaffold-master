@@ -60,7 +60,12 @@ export function createHttpClient(options: HttpClientOptions = {}): HttpClient {
     const response = await fetcher(buildUrl(baseUrl, path, query), init)
     const payload = await parseJson<ApiResponse<T>>(response)
     if (!response.ok || payload.code !== 200) {
-      if ((payload.code === 401 || response.status === 401) && token && token === tokenProvider()) unauthorizedHandler?.()
+      // 401 → 回登录页；token 轮换中（请求发出后 provider 已换新值）除外，避免旧 token 的迟到 401 打断新会话。
+      // token 为 null 也触发：本地过期判定清了存储后请求裸奔被拒，此时必须跳登录而不是停在原地弹 toast。
+      if (payload.code === 401 || response.status === 401) {
+        const current = tokenProvider()
+        if (!token || token === current) unauthorizedHandler?.()
+      }
       throw new ApiError(payload.message || '请求失败', payload.code || response.status, response.status, payload.traceId)
     }
     return payload.data
@@ -74,7 +79,10 @@ export function createHttpClient(options: HttpClientOptions = {}): HttpClient {
     const response = await fetcher(buildUrl(baseUrl, path, query), { method: 'GET', headers })
     if (!response.ok) {
       const payload = await parseJson<ApiResponse<unknown>>(response)
-      if ((payload.code === 401 || response.status === 401) && token && token === tokenProvider()) unauthorizedHandler?.()
+      if (payload.code === 401 || response.status === 401) {
+        const current = tokenProvider()
+        if (!token || token === current) unauthorizedHandler?.()
+      }
       throw new ApiError(payload.message || '下载失败', payload.code || response.status, response.status, payload.traceId)
     }
     return response.blob()

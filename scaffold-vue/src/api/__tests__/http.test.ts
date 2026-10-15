@@ -67,3 +67,19 @@ test('an unauthorized download for the current session uses the same login-expir
     setUnauthorizedHandler(null)
   }
 })
+
+test('a 401 without any local token still triggers the login-expiry handler', async () => {
+  // 本地过期判定清空存储后，请求裸奔被 401 拒：必须触发跳登录，而不是只弹 toast 留在原地
+  let redirects = 0
+  setUnauthorizedHandler(() => { redirects += 1 })
+  const client = createHttpClient({
+    tokenProvider: () => null,
+    fetcher: async () => new Response(JSON.stringify({ code: 401, message: '未认证或登录已过期' }), { status: 401 }),
+  })
+  try {
+    await assert.rejects(client.get('/system/users'), ApiError)
+    assert.equal(redirects, 1)
+  } finally {
+    setUnauthorizedHandler(null)
+  }
+})
