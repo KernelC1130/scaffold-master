@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（alt-fit 接入部门画布）
+
+- 部门管理开 `alt-fit`：OrgCanvas（.org-canvas，与星图同款接法 flex:1 + min-height 560px，平移画布 overflow:hidden 不变）与表格视图同底。alt-fit 已接入：菜单星图、角色矩阵/溯源、部门画布。
+
 ## 2026-10-15（alt-fit 接入角色管理矩阵/溯源）
 
 - 角色管理开 `alt-fit`：权限矩阵（.matrix 卡片 flex 填满，.mx-scroll 解除 max-height 公式改 flex 撑满，内部滚动 + sticky 表头不变）与权限溯源（.trace 纵向 flex，.trace-graph 同星图接法 height:auto + flex:1 + min-height 600px）均与表格视图同底。至此 alt-fit 接入：菜单星图、角色矩阵、角色溯源。

@@ -171,6 +171,7 @@ async function remove(row: Dept) {
     :columns="columns"
     :min-width="980"
     fit-viewport
+    alt-fit
     :alt-view="view === 'canvas'"
   >
     <template #actions>
