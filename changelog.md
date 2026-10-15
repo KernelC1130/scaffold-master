@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（看板底线对齐：收掉两段内边距）
+
+- 用户尺子实测卡片底与列表面板底差 ~18px：.board padding-bottom 6px + .board-col-body padding-bottom 12px 叠加。fit 模式下 board 底距清零（盒底 856→862 与面板同线）、列体底距 12→6px（卡片底 844→856）。
+
 ## 2026-10-15（修复：用户看板卡片溢出琥珀列 + 看板拉齐列表页）
 
 - 用户管理看板滚动时卡片视觉溢出列背景（底部错位十几像素，成因未完全定案——静态 CSS 与隔离 harness 均无法复现）。双保险：`.board-col` 加 overflow:hidden 兜底裁切；同时按需求给看板接 alt-fit——列高改由视口约束（列区 flex 撑满 + grid-template-rows minmax(0,1fr)），退休 100dvh-300px 魔法数字（页头实际更高时即失准）。按部门/角色/状态三种分列同步受益。
