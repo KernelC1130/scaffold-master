@@ -73,17 +73,18 @@ const layout = computed(() => {
   return { nodes, links, width, height }
 })
 
-/* ── 视图变换：只动 layer 的 transform ── */
+/* ── 视图变换：只动 layer 的 transform。scale 是别名，quickTo 必须拆成 scaleX/scaleY ── */
 let setX: ((v: number) => void) | null = null
 let setY: ((v: number) => void) | null = null
-let setK: ((v: number) => void) | null = null
+let setKX: ((v: number) => void) | null = null
+let setKY: ((v: number) => void) | null = null
 function apply(animate = true) {
   if (!layer.value) return
   if (!animate || motionSkipped() || !setX) {
     gsap.set(layer.value, { x: view.x, y: view.y, scale: view.k })
     return
   }
-  setX(view.x); setY!(view.y); setK!(view.k)
+  setX(view.x); setY!(view.y); setKX!(view.k); setKY!(view.k)
 }
 
 /* 视口尺寸取布局像素（clientWidth / Height），页面进场缩放期间量到的包围盒会偏小 */
@@ -208,7 +209,8 @@ onMounted(() => {
   if (layer.value) {
     setX = gsap.quickTo(layer.value, 'x', { duration: 0.55, ease: 'power3.out' })
     setY = gsap.quickTo(layer.value, 'y', { duration: 0.55, ease: 'power3.out' })
-    setK = gsap.quickTo(layer.value, 'scale', { duration: 0.55, ease: 'power3.out' })
+    setKX = gsap.quickTo(layer.value, 'scaleX', { duration: 0.55, ease: 'power3.out' })
+    setKY = gsap.quickTo(layer.value, 'scaleY', { duration: 0.55, ease: 'power3.out' })
   }
   observer = new ResizeObserver(() => fit(false))
   if (viewport.value) observer.observe(viewport.value)
