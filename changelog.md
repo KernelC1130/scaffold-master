@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（平台更名：金缮 · Kintsugi）
+
+- 平台定名「金缮 / Kintsugi」（金缮 = 以金修补裂痕，与缺口 logo、漏洞→修复闭环同构；安全圈无重名占用）。APP.name→Kintsugi（标题后缀）、index.html 静态 title→Kintsugi、登录品牌区：品牌名金缮/KINTSUGI、主标题换 Cohen《Anthem》句「万物皆有裂痕，那是光照进来的地方。」、副文案与版权位同步。四步终端联动与「资产有序 · 风险可控」签名保留。
+
 ## 2026-10-15（修复：本地过期后 401 不跳登录页）
 
 - 场景：页面开着不放，token 到达前端过期时间后 session.token() 就地清存储并返回 null，后续请求裸奔被后端 401 拒——而 http.ts 触发跳登录的条件 `token && token === tokenProvider()` 被 null 短路，handler 不触发：只弹「未认证或登录已过期」toast、列表空、停在原地（刷新前一直僵尸态）。修复：`!token` 也触发 unauthorizedHandler；`token === current` 轮换保护保留（迟到 401 不打断新会话）。http.test.ts 补裸奔 401 回归测试（5 用例全绿）。

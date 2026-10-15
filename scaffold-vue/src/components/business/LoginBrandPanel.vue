@@ -71,15 +71,15 @@ function pickStage(index: number) {
           <div class="brand-top">
             <div class="platform-brand">
               <BrandMark />
-              <div><div class="brand-name">资产漏洞管理平台</div><div class="brand-sub">VULN MANAGER</div></div>
+              <div><div class="brand-name">金缮</div><div class="brand-sub">KINTSUGI</div></div>
             </div>
             <span class="brand-edition"><Icon name="shield" :size="13" />风险治理 · 全程可循</span>
           </div>
 
           <div class="brand-copy">
             <div class="intro-label"><span />让风险治理，更进一步</div>
-            <h1 id="brand-title">看清资产风险，<br><span>推动漏洞闭环。</span></h1>
-            <p>从资产梳理、漏洞发现到修复复测，<br class="desktop-break">让每一项风险都有迹可循。</p>
+            <h1 id="brand-title">万物皆有裂痕，<br><span>那是光照进来的地方。</span></h1>
+            <p>以金修补裂痕，以流程治理风险——<br class="desktop-break">发现、修复、复测，皆有迹可循。</p>
           </div>
 
           <div class="stage-box" aria-hidden="true">
@@ -102,7 +102,7 @@ function pickStage(index: number) {
               <span v-if="index < stages.length - 1" class="step-arrow" aria-hidden="true"><Icon name="chevronRight" :size="13" /></span>
             </template>
           </div>
-          <footer class="brand-footer"><span>© 2026 资产漏洞管理平台</span><span class="footer-sign"><Icon name="shield" :size="12" />资产有序 · 风险可控</span></footer>
+          <footer class="brand-footer"><span>© 2026 金缮 · Kintsugi</span><span class="footer-sign"><Icon name="shield" :size="12" />资产有序 · 风险可控</span></footer>
         </section>
 </template>
 
