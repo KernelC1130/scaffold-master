@@ -185,8 +185,8 @@ watch(detail, async (row) => {
           <div class="section-label" style="margin: 20px 0 10px">关联漏洞（{{ detailVulns.length }}）</div>
           <div v-if="detailLoading" class="soft">加载中…</div>
           <div v-else-if="!detailVulns.length" class="soft">暂无关联漏洞，可在「漏洞管理」页登记并选择此资产</div>
-          <div v-else class="drawer-stack" style="gap: 10px">
-            <div v-for="v in detailVulns" :key="v.id" class="kv-grid" style="border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px">
+          <div v-else class="drawer-stack" style="display: flex; flex-direction: column; gap: 10px">
+            <div v-for="v in detailVulns" :key="v.id" class="kv-grid">
               <div class="kv span-2"><div class="kv-value">
                 <DictTag type="vuln_risk_level" :value="v.riskLevel" />
                 <DictTag type="vuln_status" :value="v.vulnStatus" />

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（详情抽屉关联条目卡修复）
+
+- 资产详情「关联漏洞」与漏洞详情「修复工单」条目卡双层背景 + 贴连修复：去掉 kv-grid 上的内联 border/radius/padding（padding 露出 kv-grid 自带的 --line 底形成灰圈，保留白底发丝卡与上方信息块同款）；条目间距失效根因是 `.drawer-stack` 类从未定义（裸 div 上 gap 无效），两处列表容器补 `display:flex; flex-direction:column; gap:10px`。附带发现：drawer-stack 全仓 6 处引用 0 处定义（Roles/OperLog 详情区靠 margin 排版未受影响），暂不动。
+
 ## 2026-10-15（AI 流式异常文案分型）
 
 - 上游模型 503 过载（硅基流动 "Service is too busy"）时聊天框直接露出 `com.openai.errors.InternalServerException` 原始串。`AiChatController` 流式 catch 块改走 `friendlyError`：按异常串分型——503/too busy/429 → 「模型服务繁忙，请稍后重试」、401/403/api key → 「模型服务认证失败，请检查参数配置中的 API Key」、超时 → 「模型服务响应超时」、其余 → 「生成失败，请稍后重试」；原始堆栈只进服务端日志（log.warn），不透传前端。

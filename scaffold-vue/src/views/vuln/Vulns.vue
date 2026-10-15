@@ -207,8 +207,8 @@ async function batchRemove(ids: (string | number)[]) {
           <div class="section-label" style="margin: 20px 0 10px">修复工单（{{ detailTasks.length }}）</div>
           <div v-if="detailLoading" class="soft">加载中…</div>
           <div v-else-if="!detailTasks.length" class="soft">暂无修复工单，可在「修复工单」页新建并关联此漏洞</div>
-          <div v-else class="drawer-stack" style="gap: 10px">
-            <div v-for="t in detailTasks" :key="t.id" class="kv-grid" style="border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px">
+          <div v-else class="drawer-stack" style="display: flex; flex-direction: column; gap: 10px">
+            <div v-for="t in detailTasks" :key="t.id" class="kv-grid">
               <div class="kv span-2"><div class="kv-value">
                 <DictTag type="vuln_task_status" :value="t.taskStatus" />
                 <DictTag type="vuln_task_priority" :value="t.priority" />
