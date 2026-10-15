@@ -131,7 +131,7 @@ async function clearAll() {
 </script>
 
 <template>
-  <ListPage title="操作日志" desc="记录后台所有写操作的操作人、请求参数、结果与耗时，用于审计与问题追溯。" table-title="操作记录" :list="list" :columns="columns" selectable :min-width="1040" fit-viewport>
+  <ListPage title="操作日志" desc="记录后台所有写操作的操作人、请求参数、结果与耗时，用于审计与问题追溯。" table-title="操作记录" :list="list" :columns="columns" selectable :min-width="1040">
     <template #before>
       <section class="band reveal">
         <div class="band-head">
