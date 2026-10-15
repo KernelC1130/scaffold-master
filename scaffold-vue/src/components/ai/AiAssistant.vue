@@ -525,7 +525,7 @@ onBeforeUnmount(() => {
           </div>
           <div v-else-if="messages.length === 0" class="ai-empty">
             <span class="ai-empty-mark"><Icon name="sparkles" :size="26" /></span>
-            <p>你好，我是漏洞管理平台 AI 助手</p>
+            <p>你好，我是金缮 AI 助手</p>
             <p class="sub">可以问我漏洞情况、风险统计等问题</p>
           </div>
           <div v-for="(msg, index) in messages" :key="index" :class="['ai-msg', msg.role]">

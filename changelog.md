@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（更名补漏：侧边栏与 AI 问候）
+
+- shortName「漏洞管理平台」→「金缮」、subtitle「Vuln Manager」→「Kintsugi」（AppShell 侧边栏品牌位）；AI 助手问候语同步「你好，我是金缮 AI 助手」。旧品牌串全仓 grep 清零。
+
 ## 2026-10-15（平台更名：金缮 · Kintsugi）
 
 - 平台定名「金缮 / Kintsugi」（金缮 = 以金修补裂痕，与缺口 logo、漏洞→修复闭环同构；安全圈无重名占用）。APP.name→Kintsugi（标题后缀）、index.html 静态 title→Kintsugi、登录品牌区：品牌名金缮/KINTSUGI、主标题换 Cohen《Anthem》句「万物皆有裂痕，那是光照进来的地方。」、副文案与版权位同步。四步终端联动与「资产有序 · 风险可控」签名保留。
