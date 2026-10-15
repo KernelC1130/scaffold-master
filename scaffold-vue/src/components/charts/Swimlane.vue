@@ -40,6 +40,8 @@ const plot = ref<HTMLElement | null>(null)
 const tip = ref<HTMLElement | null>(null)
 const hover = ref<{ lane: SwimlaneLane; block: TimelineBlock } | null>(null)
 const tipPos = ref({ x: 0, y: 0 })
+/** 悬停块贴近泳道顶部时气泡下翻，避免被 fixedLanes 的 overflow 裁掉 */
+const tipBelow = ref(false)
 const now = ref<number | null>(props.nowSec)
 const shownLanes = computed(() => props.lanes.slice(0, props.maxLanes))
 const hiddenCount = computed(() => Math.max(0, props.lanes.length - props.maxLanes))
@@ -88,7 +90,10 @@ function onEnter(event: PointerEvent, lane: SwimlaneLane, block: TimelineBlock) 
   const box = plot.value?.getBoundingClientRect()
   const target = (event.currentTarget as HTMLElement).getBoundingClientRect()
   if (!box) return
-  tipPos.value = { x: target.left - box.left + target.width / 2, y: target.top - box.top }
+  const y = target.top - box.top
+  // 气泡高约 110px：头顶放不下就锚定块底、向下展开
+  tipBelow.value = y < 118
+  tipPos.value = { x: target.left - box.left + target.width / 2, y: tipBelow.value ? y + target.height : y }
 }
 
 /* 现在线：对齐到整分钟后每 60s 推进 */
@@ -144,7 +149,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
         </div>
       </div>
       <div v-if="now !== null" class="swim-now" :style="{ left: `calc(var(--swim-label-w) + (100% - var(--swim-label-w)) * ${frac(now)})` }" aria-hidden="true" />
-      <div v-if="hover" ref="tip" class="swim-tip m-float" :style="{ left: `${tipPos.x}px`, top: `${tipPos.y}px` }">
+      <div v-if="hover" ref="tip" :class="['swim-tip', 'm-float', { 'is-below': tipBelow }]" :style="{ left: `${tipPos.x}px`, top: `${tipPos.y}px` }">
         <span class="eyebrow">{{ hover.lane.module }}</span>
         <b class="tnum">{{ fmt(hover.block.startSec) }} – {{ fmt(hover.block.endSec) }}</b>
         <span class="swim-tip-row"><span>操作</span><b class="tnum">{{ hover.block.count }} 次</b></span>

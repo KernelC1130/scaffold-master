@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（修复：泳道气泡被裁）
+
+- Dashboard 泳道 fixedLanes=5 使 .swim-body 带 overflowY:auto，气泡固定向上弹（translate -100%-8px），悬停首泳道块时上半截被容器顶裁掉。修复：onEnter 检测头顶空间（<118px）时锚定块底下翻（.swim-tip.is-below → translate -50% 8px）。
+
 ## 2026-10-15（修复：柱状图峰值读数重叠与折行）
 
 - 紧凑柱状图读数 .bar-readout 原 top:0 钉在整图顶部，高柱从标签中穿过；且绝对定位 left:50%+translate(-50%) 使 shrink-to-fit 只剩半槽宽，两位以上数字+单位折行。修复：bottom 改为按柱高动态绑定（calc(柱高% + 6px)），补 white-space:nowrap。

@@ -378,6 +378,7 @@
   translate: -50% calc(-100% - 8px);
   pointer-events: none;
 }
+.swim-tip.is-below { translate: -50% 8px; }
 .swim-tip-row { display: flex; justify-content: space-between; gap: 12px; color: var(--ink-soft); }
 .swim-tip-row b { color: var(--ink); }
 .swim-tip-row b.is-red { color: var(--red-text); }
