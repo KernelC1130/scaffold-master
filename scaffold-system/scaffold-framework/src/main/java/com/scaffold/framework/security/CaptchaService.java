@@ -40,29 +40,30 @@ public class CaptchaService {
         redisTemplate.opsForValue().set(KEY_PREFIX + uuid, code.toString(), EXPIRE_SECONDS, TimeUnit.SECONDS);
         Map<String, String> result = new LinkedHashMap<>();
         result.put("uuid", uuid);
-        result.put("img", render(code.toString()));
+        result.put("img", render(code.toString(), false));
+        result.put("imgDark", render(code.toString(), true));
         return result;
     }
 
-    /** 渲染验证码 PNG（浅底 + 干扰线 + ±10° 微旋转），base64 data URI；明文只存 Redis，不回传前端 */
-    private static String render(String code) {
+    /** 渲染验证码 PNG（透明底 + 干扰线 + ±10° 微旋转），base64 data URI；明文只存 Redis，不回传前端 */
+    private static String render(String code, boolean dark) {
         final int width = 120;
         final int height = 40;
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
         try {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setColor(new Color(0xF3F5F7));
-            g.fillRect(0, 0, width, height);
             ThreadLocalRandom rnd = ThreadLocalRandom.current();
             g.setStroke(new BasicStroke(1.1f));
             for (int i = 0; i < 4; i++) {
-                g.setColor(new Color(150 + rnd.nextInt(60), 155 + rnd.nextInt(60), 160 + rnd.nextInt(60)));
+                g.setColor(dark ? new Color(120, 128, 136, 150) : new Color(150 + rnd.nextInt(60), 155 + rnd.nextInt(60), 160 + rnd.nextInt(60)));
                 g.drawLine(rnd.nextInt(width), rnd.nextInt(height), rnd.nextInt(width), rnd.nextInt(height));
             }
             g.setFont(new Font("SansSerif", Font.BOLD, 25));
             for (int i = 0; i < code.length(); i++) {
-                g.setColor(new Color(45 + rnd.nextInt(50), 55 + rnd.nextInt(50), 65 + rnd.nextInt(60)));
+                g.setColor(dark
+                        ? new Color(195 + rnd.nextInt(45), 200 + rnd.nextInt(45), 208 + rnd.nextInt(40))
+                        : new Color(45 + rnd.nextInt(50), 55 + rnd.nextInt(50), 65 + rnd.nextInt(60)));
                 double theta = (rnd.nextInt(21) - 10) * Math.PI / 180;
                 int x = 13 + i * 26;
                 int y = 29;

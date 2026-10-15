@@ -155,7 +155,10 @@
   color: var(--ink-soft);
   flex: none;
 }
-.captcha-img { display: block; width: 118px; height: 38px; border-radius: var(--r-sm); }
+.captcha-img { display: block; width: 118px; height: 38px; }
+.captcha-img--dark { display: none; }
+[data-theme='dark'] .captcha-img:not(.captcha-img--dark) { display: none; }
+[data-theme='dark'] .captcha-img--dark { display: block; }
 .login-options { display: flex; align-items: center; justify-content: space-between; }
 .login-submit-slot { display: flex; justify-content: center; margin-top: 4px; min-height: 46px; }
 .login-submit { height: 46px; font-size: 14px; border-radius: var(--r-md); }

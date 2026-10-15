@@ -34,6 +34,7 @@ const errors = ref<Partial<Record<keyof typeof form, string>>>({})
 const remember = ref(loginHint.remember)
 const submitting = ref(false)
 const captchaImg = ref('')
+const captchaImgDark = ref('')
 const captchaUuid = ref('')
 const captchaLoading = ref(false)
 const root = ref<HTMLElement | null>(null)
@@ -79,9 +80,11 @@ async function refreshCaptcha() {
     const res = await authApi.captcha()
     captchaUuid.value = res.uuid
     captchaImg.value = res.img
+    captchaImgDark.value = res.imgDark
   } catch {
     captchaUuid.value = ''
     captchaImg.value = ''
+    captchaImgDark.value = ''
     pushToast('无法连接服务，请确认后端已启动', 'danger')
   } finally {
     captchaLoading.value = false
@@ -201,6 +204,7 @@ onBeforeUnmount(() => {
                 <TextInput v-model="form.captcha" icon="shield" placeholder="请输入右侧字符" :maxlength="6" autocomplete="off" :invalid="!!errors.captcha" />
                 <button type="button" class="captcha-box m-groove" :disabled="captchaLoading" aria-label="看不清，换一张" title="看不清，换一张" @click="refreshCaptcha">
                   <img v-if="captchaImg" :src="captchaImg" class="captcha-img" alt="" />
+                  <img v-if="captchaImgDark" :src="captchaImgDark" class="captcha-img captcha-img--dark" alt="" />
                   <Icon v-else name="refresh" :size="16" />
                 </button>
               </div>

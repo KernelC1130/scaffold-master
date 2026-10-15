@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（验证码主题自适应）
+
+- 暗色主题下浅色底 PNG 白块违和。CaptchaService 改透明底 ARGB 双份渲染：img（深墨字符）/imgDark（浅灰字符），响应三键 {uuid, img, imgDark}；前端两张叠放，[data-theme=dark] 切显隐，字符直接浮在 m-groove 按钮表面上，深浅主题均融合。
+
 ## 2026-10-15（安全修复：验证码明文自曝）
 
 - CaptchaService.generate() 把明文 code 直接放进响应（前端还用 CSS 旋转字符假装是图）——验证码零防护，机器人读 JSON 即可过验证。修复：后端 AWT 渲染 PNG（浅底+干扰线+±10° 旋转，JDK 自带零依赖）返回 {uuid, img} data URI，明文只存 Redis；前端删 captcha-code 伪图改 <img> 渲染。线上验证：/api/auth/captcha 仅回 {img, uuid}。
