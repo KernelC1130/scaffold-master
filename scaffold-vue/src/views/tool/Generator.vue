@@ -107,6 +107,7 @@ async function generate(row: TableRow) {
     :list="list"
     :columns="columns"
     :min-width="960"
+    fit-viewport
   >
     <template #actions>
       <PermissionButton perm="tool:gen:list" variant="primary" icon="upload" @click="openImport">导入数据表</PermissionButton>

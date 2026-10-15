@@ -202,7 +202,7 @@ async function removeData(row: DataRow) {
 </script>
 
 <template>
-  <ListPage title="字典管理" desc="维护各业务页面的下拉选项和状态标签，统一选项名称、取值和显示样式。" table-title="字典类型" :list="list" :columns="columns" :min-width="860" :alt-view="view === 'book'">
+  <ListPage title="字典管理" desc="维护各业务页面的下拉选项和状态标签，统一选项名称、取值和显示样式。" table-title="字典类型" :list="list" :columns="columns" :min-width="860" fit-viewport :alt-view="view === 'book'">
     <template #alt>
       <DictSwatchbook
         ref="book"

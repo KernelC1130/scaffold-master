@@ -117,7 +117,7 @@ async function clearAll() {
 </script>
 
 <template>
-  <ListPage title="登录日志" desc="记录账号的登录、退出与失败尝试，便于发现异常登录。" table-title="登录记录" :list="list" :columns="columns" selectable :min-width="900">
+  <ListPage title="登录日志" desc="记录账号的登录、退出与失败尝试，便于发现异常登录。" table-title="登录记录" :list="list" :columns="columns" selectable :min-width="900" fit-viewport>
     <template #before>
       <section class="band reveal">
         <div class="band-head">

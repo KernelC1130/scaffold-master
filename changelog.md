@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（列表页 fit-viewport 全量覆盖）
+
+- 剩余 9 个列表页补 `fit-viewport`（登录/操作日志、参数配置、部门/字典/菜单/岗位/角色、代码生成），全站 13 个列表页统一为「查询区与分页固定、仅表格数据区滚动」。带 alt 视图的页面（参数面板/字典书架/岗位阶梯/部门画布/菜单星图/角色矩阵）在非表格视图自动豁免，维持自然滚动。
+
 ## 2026-10-15（详情抽屉关联条目卡修复）
 
 - 资产详情「关联漏洞」与漏洞详情「修复工单」条目卡双层背景 + 贴连修复：去掉 kv-grid 上的内联 border/radius/padding（padding 露出 kv-grid 自带的 --line 底形成灰圈，保留白底发丝卡与上方信息块同款）；条目间距失效根因是 `.drawer-stack` 类从未定义（裸 div 上 gap 无效），两处列表容器补 `display:flex; flex-direction:column; gap:10px`。附带发现：drawer-stack 全仓 6 处引用 0 处定义（Roles/OperLog 详情区靠 margin 排版未受影响），暂不动。
