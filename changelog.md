@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（AI 流式异常文案分型）
+
+- 上游模型 503 过载（硅基流动 "Service is too busy"）时聊天框直接露出 `com.openai.errors.InternalServerException` 原始串。`AiChatController` 流式 catch 块改走 `friendlyError`：按异常串分型——503/too busy/429 → 「模型服务繁忙，请稍后重试」、401/403/api key → 「模型服务认证失败，请检查参数配置中的 API Key」、超时 → 「模型服务响应超时」、其余 → 「生成失败，请稍后重试」；原始堆栈只进服务端日志（log.warn），不透传前端。
+
 ## 2026-10-14（参数配置页：AI 连通性测试 + 知识库重建入口）
 
 - 参数配置页 AI 分组组头加专属操作（改进自旧平台 AI 设置页的独立表单形态——scaffold 复用参数配置页零新页面）：「AI 模型服务」组加**测试连通性**按钮（一次测对话 + 向量双模型，结果行内展示 ok/提示/耗时）；「向量模型服务」组加**重建知识库**按钮 + 知识库状态小字（chunks/文件数，管理权限 vuln:ai:manage）。后端新增 /api/vuln/ai/test（EmbeddingModelProvider.testEmbedding 分型报错）。

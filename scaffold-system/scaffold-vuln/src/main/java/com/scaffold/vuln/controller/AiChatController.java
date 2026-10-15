@@ -16,6 +16,8 @@ import com.scaffold.vuln.ai.domain.AiChatMessage;
 import com.scaffold.vuln.ai.rag.EmbeddingModelProvider;
 import com.scaffold.vuln.ai.domain.AiChatSession;
 import com.scaffold.vuln.ai.service.AiChatService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
@@ -46,6 +48,8 @@ public class AiChatController {
 
     /** 多轮上下文最多回放的消息条数（超出丢弃最早的） */
     private static final int MAX_HISTORY = 10;
+
+    private static final Logger log = LoggerFactory.getLogger(AiChatController.class);
 
     private final AiModelFactory aiModelFactory;
     private final AiChatService aiChatService;
@@ -133,9 +137,8 @@ public class AiChatController {
                 out.write("data: [DONE]\n\n".getBytes(StandardCharsets.UTF_8));
                 out.flush();
             } catch (Exception e) {
-                // 客户端断开（IOException）或业务异常：尝试推送 error 帧（断开时静默失败）
-                String msg = e instanceof BusinessException be ? be.getMessage()
-                        : "生成失败：" + (e.getMessage() == null ? "未知错误" : e.getMessage());
+                // 客户端断开（IOException）或业务异常：推送用户可读文案（原始异常进服务端日志，不透传前端）
+                String msg = e instanceof BusinessException be ? be.getMessage() : friendlyError(e);
                 try {
                     out.write(("data: " + objectMapper.writeValueAsString(Map.of("error", msg)) + "\n\n")
                             .getBytes(StandardCharsets.UTF_8));
@@ -182,6 +185,26 @@ public class AiChatController {
             throw new BusinessException("会话不存在，请先新建会话");
         }
         return aiChatService.getOwnedSession(req.sessionId(), currentUserId());
+    }
+
+    /**
+     * 上游模型异常转用户可读文案：按状态码分型提示（原始信息含异常类名，只留服务端日志）。
+     * 硅基流动过载时 503 报 "Service is too busy"，限流为 429。
+     */
+    private static String friendlyError(Exception e) {
+        log.warn("AI 生成失败", e);
+        String s = String.valueOf(e);
+        if (s.contains("503") || s.contains("too busy") || s.contains("429") || s.contains("rate limit")) {
+            return "模型服务繁忙，请稍后重试";
+        }
+        if (s.contains("401") || s.contains("403") || s.contains("Unauthorized")
+                || s.toLowerCase().contains("api key")) {
+            return "模型服务认证失败，请检查参数配置中的 API Key";
+        }
+        if (s.contains("timed out") || s.contains("timeout")) {
+            return "模型服务响应超时，请稍后重试";
+        }
+        return "生成失败，请稍后重试";
     }
 
     /** 从消息表读取该会话最近 MAX_HISTORY 条消息，转成 Spring AI messages（时间正序） */
