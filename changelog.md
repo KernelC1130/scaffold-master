@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（修复：字典样本册入场闪帧）
+
+- 进样本册时卡片先空壳渲染可见 → 逐个字典拉数据各自重渲（闪几下）→ 全部到齐后 revealCascade 的 fromTo 起手把整面拽回 opacity:0 再逐个浮现。修复：加 is-entering 门闩（数据未就位藏住卡片，watch 每轮开头置位），revealCascade 接管后放行——入场只剩干净的级联浮现。
+
 ## 2026-10-15（真凶：quickTo('scale') 静默失败——缩放漂移根治）
 
 - 用户探针抓到实锤：点放大后 x 平移了而 scale 纹丝不动（纯漂移），控制台栈指到 GSAP 警告「scale not eligible for reset」——`gsap.quickTo(layer, 'scale')` 不支持别名属性，静默失败：按钮缩放只有平移生效、缩放丢失 = 漂移；画布拖拽/滚轮走 gsap.set 直写正常，解释了「点画布就恢复」。修复：scale 拆 scaleX/scaleY 两个 quickTo。锚点改树中心（上一条）保留，缩放围绕树中心原地生长。

@@ -40,6 +40,8 @@ const items = reactive<Record<string, DictItem[]>>({})
 const expanded = ref<string | null>(null)
 const grid = ref<HTMLElement | null>(null)
 const canEdit = hasPermission('system:dict:edit')
+/** 数据未就位时藏住卡片，防止「先渲染→reveCascade 拽回透明」的闪帧 */
+const entering = ref(true)
 
 async function load(dictType: string) {
   try {
@@ -49,9 +51,11 @@ async function load(dictType: string) {
   }
 }
 watch(() => props.types, async (types) => {
+  entering.value = true
   await Promise.all(types.filter(t => !items[t.dictType]).map(t => load(t.dictType)))
   await nextTick()
   revealCascade(grid.value, '.swatch', 0.05)
+  entering.value = false
 }, { immediate: true })
 
 const distribution = (list: DictItem[] = []) => {
@@ -94,7 +98,7 @@ const sorted = computed(() => props.types)
 </script>
 
 <template>
-  <div ref="grid" class="swatchbook">
+  <div ref="grid" :class="['swatchbook', { 'is-entering': entering }]">
     <p v-if="loading && !types.length" class="band-empty faint">正在加载字典…</p>
     <article
       v-for="t in sorted"
