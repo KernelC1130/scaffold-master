@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（字典样本册卡片等高）
+
+- 样本册网格 `align-items: start → stretch`：同行卡片以最高的为准等高（用户拍板方案）；`swatch-bar` 加 `margin-top: auto` 让色谱+底行钉在卡底，富余空间落在标签区与色谱之间。展开态占满整行不受影响。
+
 ## 2026-10-15（alt-fit 接入岗位阶梯）
 
 - 岗位管理开 `alt-fit`：PostLadder（.ladder 纵向 flex + .ladder-stage flex:1，与溯源同款双层接法，560px 保底）与表格视图同底。alt-fit 已接入：菜单星图、角色矩阵/溯源、部门画布、岗位阶梯。
