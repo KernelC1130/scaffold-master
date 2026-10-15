@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（安全修复：验证码明文自曝）
+
+- CaptchaService.generate() 把明文 code 直接放进响应（前端还用 CSS 旋转字符假装是图）——验证码零防护，机器人读 JSON 即可过验证。修复：后端 AWT 渲染 PNG（浅底+干扰线+±10° 旋转，JDK 自带零依赖）返回 {uuid, img} data URI，明文只存 Redis；前端删 captcha-code 伪图改 <img> 渲染。线上验证：/api/auth/captcha 仅回 {img, uuid}。
+
 ## 2026-10-15（更名补漏：侧边栏与 AI 问候）
 
 - shortName「漏洞管理平台」→「金缮」、subtitle「Vuln Manager」→「Kintsugi」（AppShell 侧边栏品牌位）；AI 助手问候语同步「你好，我是金缮 AI 助手」。旧品牌串全仓 grep 清零。

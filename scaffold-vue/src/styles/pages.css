@@ -155,8 +155,7 @@
   color: var(--ink-soft);
   flex: none;
 }
-.captcha-code { display: inline-flex; gap: 4px; font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--ink); letter-spacing: .02em; }
-.captcha-code span { display: inline-block; }
+.captcha-img { display: block; width: 118px; height: 38px; border-radius: var(--r-sm); }
 .login-options { display: flex; align-items: center; justify-content: space-between; }
 .login-submit-slot { display: flex; justify-content: center; margin-top: 4px; min-height: 46px; }
 .login-submit { height: 46px; font-size: 14px; border-radius: var(--r-md); }

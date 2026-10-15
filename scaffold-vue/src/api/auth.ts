@@ -9,7 +9,8 @@ export interface LoginRequest {
 
 export interface CaptchaResponse {
   uuid: string
-  code: string
+  /** 验证码图片（data URI），明文只存服务端 Redis */
+  img: string
 }
 
 export interface LoginResponse {
