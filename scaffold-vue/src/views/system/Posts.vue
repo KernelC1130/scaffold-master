@@ -119,7 +119,7 @@ async function batchRemove(ids: (string | number)[]) {
 </script>
 
 <template>
-  <ListPage title="岗位管理" desc="岗位描述员工在组织中的职务，可在用户管理中为用户指定岗位。" table-title="岗位列表" :list="list" :columns="columns" selectable fit-viewport :alt-view="view === 'ladder'">
+  <ListPage title="岗位管理" desc="岗位描述员工在组织中的职务，可在用户管理中为用户指定岗位。" table-title="岗位列表" :list="list" :columns="columns" selectable fit-viewport alt-fit :alt-view="view === 'ladder'">
     <template #actions>
       <Segmented v-model="view" label="视图" :options="VIEWS" />
       <PermissionButton perm="system:post:add" variant="primary" icon="plus" @click="openCreate">新增岗位</PermissionButton>

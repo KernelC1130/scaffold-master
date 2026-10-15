@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（alt-fit 接入岗位阶梯）
+
+- 岗位管理开 `alt-fit`：PostLadder（.ladder 纵向 flex + .ladder-stage flex:1，与溯源同款双层接法，560px 保底）与表格视图同底。alt-fit 已接入：菜单星图、角色矩阵/溯源、部门画布、岗位阶梯。
+
 ## 2026-10-15（alt-fit 接入部门画布）
 
 - 部门管理开 `alt-fit`：OrgCanvas（.org-canvas，与星图同款接法 flex:1 + min-height 560px，平移画布 overflow:hidden 不变）与表格视图同底。alt-fit 已接入：菜单星图、角色矩阵/溯源、部门画布。
