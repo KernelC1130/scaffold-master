@@ -7,8 +7,7 @@ import org.mybatis.spring.annotation.MapperScan;
 
 @MapperScan({
         "com.scaffold.system.mapper",
-        "com.scaffold.generator.mapper",
-        "com.scaffold.vuln.mapper"
+        "com.scaffold.generator.mapper"
 })
 @EnableScheduling
 @SpringBootApplication(scanBasePackages = "com.scaffold")

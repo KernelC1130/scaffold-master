@@ -13,7 +13,7 @@ import TrendChart from '@/components/charts/TrendChart.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import TickRing from '@/components/charts/TickRing.vue'
 import Swimlane from '@/components/charts/Swimlane.vue'
-import { portalApi, systemApi, vulnApi, type DashboardSummary, type OperTimeline } from '@/api'
+import { portalApi, systemApi, type DashboardSummary, type OperTimeline } from '@/api'
 import { currentUser, navGroups, pathOf } from '@/composables/auth'
 import { toastError } from '@/composables/toast'
 import { EASE, firstTimeInSession, gsap, motionSkipped, trackGlow } from '@/composables/motion'
@@ -91,7 +91,6 @@ const scopeItems = computed(() => {
 const loginLogPath = computed(() => pathOf('monitor/loginlog/index'))
 const operLogPath = computed(() => pathOf('monitor/operlog/index'))
 const canTimeline = computed(() => Boolean(operLogPath.value) && hasPermission('monitor:operlog:list'))
-const canVuln = computed(() => hasPermission('vuln:vulnerability:list'))
 const shortcuts = computed(() => navGroups.value
   .filter(g => !g.single)
   .flatMap(g => g.items.map(i => ({ ...i, group: g.label })))
@@ -117,51 +116,7 @@ async function loadTimeline() {
   }
 }
 
-/* ── 安全态势（漏洞平台）：统计接口无权限或失败时静默隐藏整块 ── */
-const vulnSummary = ref<{ totalAssets: number; openVulns: number; highRiskOpen: number; weekTasks: number } | null>(null)
-const vulnMonthly = ref<Array<{ name: string; value: number }>>([])
-const vulnMonthLabel = (name: string) => {
-  const month = name.split('-')[1]
-  return month ? `${Number(month)}月` : name
-}
-const selectedVulnMonth = ref<number | null>(null)
-const selectedVulnIndex = computed(() => {
-  if (!vulnMonthly.value.length) return -1
-  return Math.min(selectedVulnMonth.value ?? vulnMonthly.value.length - 1, vulnMonthly.value.length - 1)
-})
-const selectedVulnItem = computed(() => selectedVulnIndex.value < 0 ? null : vulnMonthly.value[selectedVulnIndex.value])
-const vulnFullMonthLabel = (name: string) => {
-  const [year, month] = name.split('-')
-  return month ? `${year} 年 ${Number(month)} 月` : name
-}
-const vulnMonthRange = computed(() => {
-  if (!vulnMonthly.value.length) return ''
-  const first = vulnMonthly.value[0].name
-  const last = vulnMonthly.value[vulnMonthly.value.length - 1].name
-  if (first === last) return vulnFullMonthLabel(first)
-  const [year, month] = first.split('-')
-  const [lastYear, lastMonth] = last.split('-')
-  return year === lastYear && month && lastMonth
-    ? `${year} 年 ${Number(month)}—${Number(lastMonth)} 月`
-    : `${vulnFullMonthLabel(first)}—${vulnFullMonthLabel(last)}`
-})
-const pageDesc = computed(() => canVuln.value ? '安全态势、系统运行概况与今日操作轨迹。' : '系统运行概况、登录脉搏与今日操作轨迹。')
-
-async function loadVuln() {
-  if (!canVuln.value) return
-  try {
-    const [s, monthly] = await Promise.all([
-      vulnApi.statistics.summary(),
-      vulnApi.statistics.vulnByMonth(),
-    ])
-    vulnSummary.value = s
-    vulnMonthly.value = monthly
-    selectedVulnMonth.value = monthly.length ? monthly.length - 1 : null
-  } catch {
-    /* 态势区块失败不影响工作台其余部分 */
-  }
-}
-
+const pageDesc = '系统运行概况、登录脉搏与今日操作轨迹。'
 function refresh() {
   load()
   loadTimeline()
@@ -202,7 +157,6 @@ watch(range, load)
 onMounted(() => {
   load()
   loadTimeline()
-  loadVuln()
   playEntrance()
 })
 </script>
@@ -216,42 +170,6 @@ onMounted(() => {
         <p class="page-desc">{{ pageDesc }}</p>
       </div>
     </header>
-
-    <!-- 安全态势（漏洞平台）：2×2 指标 + 月度柱状图，无权限整块隐藏 -->
-    <section v-if="canVuln" class="bento bento-wide vuln-board m-glow" @pointermove="trackGlow">
-      <span class="glow-layer" aria-hidden="true" />
-      <div class="hero-head">
-        <div class="vuln-title"><Icon name="shield" :size="20" /><h2>安全态势</h2></div>
-        <div class="vuln-links">
-          <button v-if="pathOf('vuln/asset/index')" type="button" class="pill-btn" @click="router.push(pathOf('vuln/asset/index'))">资产管理 <span aria-hidden="true">↗</span></button>
-          <button v-if="pathOf('vuln/vuln/index')" type="button" class="pill-btn" @click="router.push(pathOf('vuln/vuln/index'))">漏洞管理 <span aria-hidden="true">↗</span></button>
-          <button v-if="pathOf('vuln/repair/index')" type="button" class="pill-btn" @click="router.push(pathOf('vuln/repair/index'))">修复工单 <span aria-hidden="true">↗</span></button>
-        </div>
-      </div>
-      <div class="hero-body">
-        <dl class="vuln-metrics">
-          <div class="vuln-metric"><dt>资产总数</dt><dd class="tnum">{{ vulnSummary?.totalAssets ?? '—' }}<small>台</small></dd><p>已纳入管理的资产</p></div>
-          <div class="vuln-metric"><dt>未闭合漏洞</dt><dd class="tnum">{{ vulnSummary?.openVulns ?? '—' }}<small>个</small></dd><p>新发现与修复中</p></div>
-          <div class="vuln-metric is-risk"><dt>高风险未闭合</dt><dd class="tnum">{{ vulnSummary?.highRiskOpen ?? '—' }}<small>个</small></dd><p>优先跟进修复</p></div>
-          <div class="vuln-metric"><dt>近 7 天新工单</dt><dd class="tnum">{{ vulnSummary?.weekTasks ?? '—' }}<small>单</small></dd><p>最近 7 天创建</p></div>
-        </dl>
-        <div class="vuln-chart">
-          <div class="vuln-chart-caption"><h3>每月发现漏洞数</h3><span v-if="vulnMonthly.length">{{ vulnMonthRange }} · 个</span></div>
-          <BarChart v-if="vulnMonthly.length"
-            variant="columns"
-            :values="vulnMonthly.map(item => Number(item.value))"
-            :labels="vulnMonthly.map(item => vulnMonthLabel(item.name))"
-            :full-labels="vulnMonthly.map(item => vulnFullMonthLabel(item.name))"
-            :highlight="selectedVulnIndex"
-            :height="172"
-            unit=" 个"
-            @select="selectedVulnMonth = $event"
-          />
-          <EmptyState v-else title="暂无漏洞数据" icon="chart" />
-          <div v-if="selectedVulnItem" class="vuln-chart-detail"><span>按发现日期统计</span><output aria-live="polite">{{ vulnFullMonthLabel(selectedVulnItem.name) }} · 发现 {{ selectedVulnItem.value }} 个</output></div>
-        </div>
-      </div>
-    </section>
 
     <div ref="grid" class="bento-grid">
       <!-- 01 主卡：登录脉搏 -->

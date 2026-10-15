@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>外壳外框处理 · 采样</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  :root {
+    --bg: linear-gradient(180deg, #f9fafc, #f2f4f8);
+    --text: #0f1115; --text-sub: #6e7480; --text-host: #969ca8;
+    --hairline: rgba(0,0,0,.07);
+    /* 模拟外壳的真实 tokens（亮） */
+    --mock-stage: #dfe3e2;
+    --mock-canvas: #f6f8f7;
+    --ink: #0f1115; --ink-soft: #4b5563; --ink-host: #969ca8;
+    --line: rgba(23,25,29,.08);
+    --hover-card: #fff;
+  }
+  :root.night {
+    --bg: linear-gradient(180deg, #0b1120, #0d1526);
+    --text: #e5e9f2; --text-sub: #94a3b8; --text-host: #64748b;
+    --hairline: rgba(148,163,184,.12);
+    /* 模拟外壳的真实 tokens（暗） */
+    --mock-stage: #090b0c;
+    --mock-canvas: #121517;
+    --ink: #e5e9f2; --ink-soft: #94a3b8; --ink-host: #64748b;
+    --line: rgba(255,255,255,.08);
+    --hover-card: rgba(255,255,255,.08);
+  }
+  body { background: var(--bg); min-height: 100vh; font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+         color: var(--text); padding: 34px 26px 60px; transition: background .25s ease; }
+  .head { max-width: 1180px; margin: 0 auto 8px; }
+  .head h1 { font-size: 19px; font-weight: 600; }
+  .head .sub { color: var(--text-sub); font-size: 13px; margin-top: 7px; line-height: 1.7; }
+  .head .sub b { color: var(--text); font-weight: 600; }
+  .seg { position: fixed; top: 16px; right: 16px; z-index: 10; display: flex; gap: 2px; padding: 3px;
+         border-radius: 999px; background: rgb(228,231,237); cursor: pointer; }
+  :root.night .seg { background: #0f1830; }
+  .seg span { padding: 5px 13px; border-radius: 999px; font-size: 12px; color: var(--text-sub); }
+  .seg span.on { background: #fff; color: #0f1115; box-shadow: 0 1px 4px rgba(0,0,0,.14); }
+  :root.night .seg span.on { background: #121b30; color: #e5e9f2; box-shadow: 0 1px 4px rgba(0,0,0,.5); }
+
+  .grid { max-width: 1180px; margin: 26px auto 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px 22px; }
+  @media (max-width: 960px) { .grid { grid-template-columns: 1fr; } }
+  .slot { display: flex; flex-direction: column; }
+  .slot .cap { margin-top: 12px; font-size: 12.5px; line-height: 1.7; color: var(--text-sub); }
+  .slot .cap b { color: var(--text); font-weight: 600; margin-right: 6px; }
+  .slot .cap .tag { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 999px;
+                    font-size: 10.5px; background: rgba(35,109,233,.1); color: #236de9; font-weight: 600; }
+
+  /* ============ 视口模拟：外层是浏览器视口，内层是舞台+外壳 ============ */
+  .vp { position: relative; border-radius: 14px; overflow: hidden; height: 340px;
+        box-shadow: 0 0 0 1px var(--hairline), 0 10px 28px rgba(0,0,0,.08); }
+  :root.night .vp { box-shadow: 0 0 0 1px rgba(148,163,184,.1), 0 10px 28px rgba(0,0,0,.4); }
+  .vp .corner { position: absolute; top: 8px; left: 12px; display: flex; gap: 5px; z-index: 5; }
+  .vp .corner i { width: 8px; height: 8px; border-radius: 50%; background: rgba(120,130,140,.3); }
+  :root.night .vp .corner i { background: rgba(148,163,184,.22); }
+
+  /* 舞台与外壳：四个方案只改 --m-* 变量 */
+  .vp .stage { position: absolute; inset: 0; padding: var(--m-pad, 0); background: var(--mock-stage); }
+  .vp .frame { position: relative; height: 100%; display: grid; grid-template-columns: 172px 1fr;
+               overflow: hidden; border-radius: var(--m-radius, 0); border: var(--m-border, none);
+               background: var(--mock-canvas); box-shadow: var(--m-shadow, none); }
+
+  /* ---- 缩略外壳内容（各方案共用，颜色跟随主题） ---- */
+  .rail { background: color-mix(in srgb, var(--hover-card) 55%, transparent); border-right: 1px solid var(--line); padding: 12px 10px; }
+  .brand { display: flex; align-items: center; gap: 7px; padding: 2px 6px 12px; }
+  .brand i { width: 20px; height: 20px; border-radius: 6px; background: #131619; position: relative; flex: none; }
+  .brand i::after { content: ''; position: absolute; inset: 0; margin: auto; width: 6px; height: 6px; border-radius: 50%;
+                    background: #82dd2d; box-shadow: 0 0 6px rgba(130,221,45,.7); }
+  .brand b { font-size: 10.5px; display: block; line-height: 1.2; color: var(--ink); }
+  .brand s { font-size: 7px; text-decoration: none; letter-spacing: .08em; color: var(--ink-host); }
+  .mi { display: flex; align-items: center; gap: 7px; padding: 6.5px 9px; border-radius: 8px; margin-bottom: 2px;
+        font-size: 10.5px; color: var(--ink-soft); }
+  .mi::before { content: ''; width: 9px; height: 9px; border-radius: 3px; background: currentColor; opacity: .5; }
+  .mi.on { background: var(--hover-card); color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .mt { font-size: 8.5px; color: var(--ink-host); letter-spacing: .06em; margin: 10px 6px 5px; }
+
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .tbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--line);
+          font-size: 10px; color: var(--ink-soft); }
+  .tbar .pill { margin-left: auto; width: 130px; height: 18px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .tbar .ava { width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(135deg, #236de9, #82dd2d); }
+  .body { padding: 14px 16px; flex: 1; }
+  .body h4 { font-size: 13px; margin-bottom: 3px; color: var(--ink); }
+  .body .d { font-size: 8.5px; color: var(--ink-host); margin-bottom: 10px; }
+  .filt { display: flex; gap: 7px; margin-bottom: 10px; }
+  .filt i { height: 20px; border-radius: 6px; background: var(--hover-card); box-shadow: 0 0 0 1px var(--line); }
+  .filt i:nth-child(1) { width: 26%; } .filt i:nth-child(2) { width: 26%; } .filt i:nth-child(3) { width: 14%; }
+  .filt .btn { width: 44px; background: #236de9; margin-left: auto; box-shadow: none; }
+  .tbl { background: var(--hover-card); border-radius: 10px; box-shadow: 0 0 0 1px var(--line); padding: 8px 10px; }
+  .tr2 { display: grid; grid-template-columns: 22px 1fr 1fr 44px 36px; gap: 8px; align-items: center; padding: 6px 0; }
+  .tr2 + .tr2 { border-top: 1px solid var(--line); }
+  .tr2 i { width: 8px; height: 8px; border-radius: 2.5px; background: color-mix(in srgb, var(--ink) 13%, transparent); }
+  .tr2 u { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 15%, transparent); text-decoration: none; }
+  .tr2 s { height: 10px; border-radius: 999px; background: rgba(35,109,233,.16); text-decoration: none; }
+  .tr2 s.ok { background: rgba(130,221,45,.3); }
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1>外壳外框处理 · 采样</h1>
+    <div class="sub">现状：<b>8px 舞台留白 + 10px 近黑画框（#17191d）+ 38px 圆角 + 大阴影</b>，亮色模式下画框与浅色舞台反差大。
+      四个方案梯度：从「只去框」到「彻底满铺」。右上角切换亮 / 暗。选中后我再把对应样式落进 layout.css。</div>
+  </div>
+  <div class="seg" onclick="document.documentElement.classList.toggle('night');[].forEach.call(this.children,s=>s.classList.toggle('on'))">
+    <span class="on">亮色</span><span>暗色</span>
+  </div>
+
+  <div class="grid">
+    <!-- C 只去框 -->
+    <div class="slot">
+      <div class="vp">
+        <div class="corner"><i></i><i></i><i></i></div>
+        <div class="stage" style="--m-pad:8px; --m-radius:38px; --m-shadow:0 18px 48px rgba(17,23,27,.18), 0 3px 10px rgba(17,23,27,.12)">
+          <div class="frame">
+            <div class="rail">
+              <div class="brand"><i></i><div><b>漏洞管理平台</b><s>VULN MANAGER</s></div></div>
+              <div class="mt">漏洞管理</div>
+              <div class="mi on">资产管理</div><div class="mi">漏洞管理</div><div class="mi">修复工单</div>
+              <div class="mt">系统监控</div><div class="mi">操作日志</div><div class="mi">登录日志</div>
+            </div>
+            <div class="main">
+              <div class="tbar">漏洞管理 / 资产管理<span class="pill"></span><span class="ava"></span></div>
+              <div class="body">
+                <h4>资产管理</h4><div class="d">登记纳管的资产（IP 与服务），风险等级由关联漏洞自动计算。</div>
+                <div class="filt"><i></i><i></i><i></i><i class="btn"></i></div>
+                <div class="tbl">
+                  <div class="tr2"><i></i><u style="width:70%"></u><u style="width:55%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:62%"></u><u style="width:48%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:74%"></u><u style="width:40%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:58%"></u><u style="width:52%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:66%"></u><u style="width:45%"></u><s></s><s class="ok"></s></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>C · 只去框</b><span class="tag">最小改动</span>仅删 10px 黑边，舞台留白 / 圆角 / 阴影全保留。悬浮卡片感还在，但失去「画框」的仪式感；38px 大圆角没了黑边压着会显得偏「玩具」。</div>
+    </div>
+
+    <!-- D 细线画框 -->
+    <div class="slot">
+      <div class="vp">
+        <div class="corner"><i></i><i></i><i></i></div>
+        <div class="stage" style="--m-pad:8px; --m-radius:30px; --m-border:1px solid color-mix(in srgb, var(--ink) 22%, transparent); --m-shadow:0 18px 48px rgba(17,23,27,.14), 0 3px 10px rgba(17,23,27,.1)">
+          <div class="frame">
+            <div class="rail">
+              <div class="brand"><i></i><div><b>漏洞管理平台</b><s>VULN MANAGER</s></div></div>
+              <div class="mt">漏洞管理</div>
+              <div class="mi on">资产管理</div><div class="mi">漏洞管理</div><div class="mi">修复工单</div>
+              <div class="mt">系统监控</div><div class="mi">操作日志</div><div class="mi">登录日志</div>
+            </div>
+            <div class="main">
+              <div class="tbar">漏洞管理 / 资产管理<span class="pill"></span><span class="ava"></span></div>
+              <div class="body">
+                <h4>资产管理</h4><div class="d">登记纳管的资产（IP 与服务），风险等级由关联漏洞自动计算。</div>
+                <div class="filt"><i></i><i></i><i></i><i class="btn"></i></div>
+                <div class="tbl">
+                  <div class="tr2"><i></i><u style="width:70%"></u><u style="width:55%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:62%"></u><u style="width:48%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:74%"></u><u style="width:40%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:58%"></u><u style="width:52%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:66%"></u><u style="width:45%"></u><s></s><s class="ok"></s></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>D · 细线画框</b><span class="tag">保留意象</span>黑框换成 1px 细描边，圆角收到 30px。画框结构还在但极轻，暗色模式下细线自然消隐；介于 C 与满铺之间的折中。</div>
+    </div>
+
+    <!-- B 满铺圆角 -->
+    <div class="slot">
+      <div class="vp">
+        <div class="corner"><i></i><i></i><i></i></div>
+        <div class="stage" style="--m-pad:0px; --m-radius:18px; --m-shadow:0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent)">
+          <div class="frame">
+            <div class="rail">
+              <div class="brand"><i></i><div><b>漏洞管理平台</b><s>VULN MANAGER</s></div></div>
+              <div class="mt">漏洞管理</div>
+              <div class="mi on">资产管理</div><div class="mi">漏洞管理</div><div class="mi">修复工单</div>
+              <div class="mt">系统监控</div><div class="mi">操作日志</div><div class="mi">登录日志</div>
+            </div>
+            <div class="main">
+              <div class="tbar">漏洞管理 / 资产管理<span class="pill"></span><span class="ava"></span></div>
+              <div class="body">
+                <h4>资产管理</h4><div class="d">登记纳管的资产（IP 与服务），风险等级由关联漏洞自动计算。</div>
+                <div class="filt"><i></i><i></i><i></i><i class="btn"></i></div>
+                <div class="tbl">
+                  <div class="tr2"><i></i><u style="width:70%"></u><u style="width:55%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:62%"></u><u style="width:48%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:74%"></u><u style="width:40%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:58%"></u><u style="width:52%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:66%"></u><u style="width:45%"></u><s></s><s class="ok"></s></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>B · 满铺圆角</b><span class="tag">窗口感</span>去框去留白，仅保留 18px 圆角——四角露出舞台色，像 macOS 应用窗口。屏幕利用率接近满铺，又比直角柔和；注意顶栏将贴住屏幕上缘。</div>
+    </div>
+
+    <!-- A 纯满铺 -->
+    <div class="slot">
+      <div class="vp">
+        <div class="corner"><i></i><i></i><i></i></div>
+        <div class="stage" style="--m-pad:0px; --m-radius:0px; --m-shadow:none">
+          <div class="frame">
+            <div class="rail">
+              <div class="brand"><i></i><div><b>漏洞管理平台</b><s>VULN MANAGER</s></div></div>
+              <div class="mt">漏洞管理</div>
+              <div class="mi on">资产管理</div><div class="mi">漏洞管理</div><div class="mi">修复工单</div>
+              <div class="mt">系统监控</div><div class="mi">操作日志</div><div class="mi">登录日志</div>
+            </div>
+            <div class="main">
+              <div class="tbar">漏洞管理 / 资产管理<span class="pill"></span><span class="ava"></span></div>
+              <div class="body">
+                <h4>资产管理</h4><div class="d">登记纳管的资产（IP 与服务），风险等级由关联漏洞自动计算。</div>
+                <div class="filt"><i></i><i></i><i></i><i class="btn"></i></div>
+                <div class="tbl">
+                  <div class="tr2"><i></i><u style="width:70%"></u><u style="width:55%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:62%"></u><u style="width:48%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:74%"></u><u style="width:40%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:58%"></u><u style="width:52%"></u><s></s><s class="ok"></s></div>
+                  <div class="tr2"><i></i><u style="width:66%"></u><u style="width:45%"></u><s></s><s class="ok"></s></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>A · 纯满铺</b><span class="tag">经典后台</span>装饰全归零，内容直达屏幕四边。最「正经」的工具观感，屏幕利用率 100%；代价是失去这个脚手架最有辨识度的外壳设计，回归通用后台。</div>
+    </div>
+  </div>
+</body>
+</html>

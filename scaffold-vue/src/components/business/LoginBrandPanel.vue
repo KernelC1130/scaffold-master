@@ -3,13 +3,14 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Icon from '@/components/Icon.vue'
 import BrandMark from '@/components/business/BrandMark.vue'
 import { motionSkipped } from '@/composables/motion'
+import { APP } from '@/data'
 
 const selected = ref(0)
 const stages = [
-  { name: '资产管理', icon: 'database', brief: '厘清资产全貌', tone: 2, mark: '✓', cmd: 'vulnctl assets --scan', out: 'inventory synced · 0 drift', spin: 'streaming', dots: 21 },
-  { name: '漏洞分级', icon: 'alert', brief: '聚焦关键风险', tone: 1, mark: '▲', cmd: 'vulnctl vuln --triage', out: 'severity mapped · flagged for review', spin: 'scoring', dots: 23 },
-  { name: '修复工单', icon: 'tool', brief: '让修复有序推进', tone: 3, mark: '→', cmd: 'vulnctl fix --track', out: 'patch in progress · owner assigned', spin: 'syncing', dots: 23 },
-  { name: '复测闭环', icon: 'role', brief: '让结果可追溯', tone: 5, mark: '✓', cmd: 'vulnctl verify --close', out: 'loop closed · risk cleared', spin: 'watching', dots: 22 },
+  { name: '用户管理', icon: 'database', brief: '账号与部门一体化', tone: 2, mark: '✓', cmd: 'scaffoldctl user --sync', out: 'accounts synced · rbac ready', spin: 'streaming', dots: 21 },
+  { name: '角色权限', icon: 'alert', brief: '菜单按钮到数据范围', tone: 1, mark: '▲', cmd: 'scaffoldctl role --grant', out: 'permissions mapped · 0 conflict', spin: 'scoring', dots: 23 },
+  { name: '字典参数', icon: 'tool', brief: '业务配置热更新', tone: 3, mark: '→', cmd: 'scaffoldctl dict --reload', out: 'options hot-reloaded', spin: 'syncing', dots: 23 },
+  { name: '代码生成', icon: 'role', brief: '四层骨架一键出', tone: 5, mark: '✓', cmd: 'scaffoldctl gen --table=demo', out: 'module generated · build green', spin: 'watching', dots: 22 },
 ]
 
 /* ── 中部终端：与底部四步联动，逐字打出当前阶段的品牌化命令；无交互时自动轮播，点击后交还控制权 ── */
@@ -71,29 +72,29 @@ function pickStage(index: number) {
           <div class="brand-top">
             <div class="platform-brand">
               <BrandMark />
-              <div><div class="brand-name">金缮</div><div class="brand-sub">KINTSUGI</div></div>
+              <div><div class="brand-name">{{ APP.shortName }}</div><div class="brand-sub">{{ APP.subtitle.toUpperCase() }}</div></div>
             </div>
-            <span class="brand-edition"><Icon name="shield" :size="13" />风险治理 · 全程可循</span>
+            <span class="brand-edition"><Icon name="shield" :size="13" />权限治理 · 全程可循</span>
           </div>
 
           <div class="brand-copy">
-            <div class="intro-label"><span />让风险治理，更进一步</div>
-            <h1 id="brand-title">万物皆有裂痕，<br><span>那是光照进来的地方。</span></h1>
-            <p>以金修补裂痕，以流程治理风险——<br class="desktop-break">发现、修复、复测，皆有迹可循。</p>
+            <div class="intro-label"><span />让权限治理，更进一步</div>
+            <h1 id="brand-title">一套开箱即用的底座，<br><span>新业务只写业务本身。</span></h1>
+            <p>登录、权限、菜单、字典参数与代码生成——<br class="desktop-break">开箱即用，皆有迹可循。</p>
           </div>
 
           <div class="stage-box" aria-hidden="true">
             <div class="term">
               <div class="term-chrome">
                 <span class="term-dots"><i /><i /><i /></span>
-                <span class="term-tag">vulnctl — live</span>
+                <span class="term-tag">scaffoldctl — live</span>
               </div>
               <code class="term-cmd"><span class="prompt">$</span> {{ typedCmd }}<span class="cursor" :style="{ background: `var(--cat-${stages[selected].tone}-ink)` }" /></code>
               <code class="term-out" :style="{ color: `var(--cat-${stages[selected].tone}-ink)` }"><span class="out-mark">{{ stages[selected].mark }}</span>{{ typedOut }}</code>
               <code class="term-line" :class="{ 'is-in': showLine }"><span class="spin-char" :style="{ color: `var(--cat-${stages[selected].tone}-ink)` }">{{ spinChar }}</span> {{ stages[selected].spin }} <span class="dots-run">{{ '·'.repeat(stages[selected].dots) }}</span> live</code>
             </div>
           </div>
-          <div class="journey" role="group" aria-label="漏洞治理流程预览">
+          <div class="journey" role="group" aria-label="平台能力流程预览">
             <template v-for="(stage, index) in stages" :key="stage.name">
               <button type="button" :aria-pressed="selected === index" :class="['journey-step', { 'is-active': selected === index }]" :style="{ '--step-accent': `var(--cat-${stage.tone}-ink)` }" @click="pickStage(index)">
                 <span class="step-icon"><Icon :name="stage.icon" :size="18" /></span>
@@ -102,7 +103,7 @@ function pickStage(index: number) {
               <span v-if="index < stages.length - 1" class="step-arrow" aria-hidden="true"><Icon name="chevronRight" :size="13" /></span>
             </template>
           </div>
-          <footer class="brand-footer"><span>© 2026 金缮 · Kintsugi</span><span class="footer-sign"><Icon name="shield" :size="12" />资产有序 · 风险可控</span></footer>
+          <footer class="brand-footer"><span>{{ APP.copyright }}</span><span class="footer-sign"><Icon name="shield" :size="12" />模块有序 · 权限可控</span></footer>
         </section>
 </template>
 

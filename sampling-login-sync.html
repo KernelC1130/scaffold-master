@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录页品牌卡 · 按钮联动采样</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  :root {
+    --canvas: #f6f8f7; --ink: #101418; --ink-soft: #4b5563; --ink-muted: #6e7480; --ink-faint: #9aa2ab;
+    --line: rgba(23,25,29,.09); --blue: #236de9; --lime: #82dd2d; --dark: #131619;
+    --groove-bg: rgba(23,25,29,.035);
+    --ease: cubic-bezier(.32,.72,.24,1);
+  }
+  body { background: linear-gradient(180deg, #eef0f3, #e7eaee); min-height: 100vh; padding: 34px 26px 60px;
+         font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; color: var(--ink); }
+  .head { max-width: 1020px; margin: 0 auto 8px; }
+  .head h1 { font-size: 19px; font-weight: 600; }
+  .head .sub { color: var(--ink-muted); font-size: 13px; margin-top: 7px; line-height: 1.7; }
+  .head .sub b { color: var(--ink); font-weight: 600; }
+  .list { max-width: 1020px; margin: 24px auto 0; display: flex; flex-direction: column; gap: 26px; }
+  .slot .cap { font-size: 12.5px; color: var(--ink-muted); line-height: 1.65; margin: 0 2px 10px; }
+  .slot .cap b { color: var(--ink); font-weight: 600; margin-right: 6px; }
+  .slot .cap .tag { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 999px;
+                    font-size: 10.5px; background: rgba(35,109,233,.1); color: var(--blue); font-weight: 600; }
+  .slot .cap .hint { color: var(--blue); font-weight: 600; }
+
+  /* ============ 品牌卡骨架（同真实布局） ============ */
+  .panel { position: relative; isolation: isolate; display: flex; flex-direction: column;
+           padding: 30px clamp(28px, 3.4vw, 46px) 20px; border: 1px solid rgba(23,25,29,.08);
+           border-radius: 28px; overflow: hidden;
+           background:
+             radial-gradient(ellipse at 67% 55%, rgba(76,141,255,.055), transparent 65%),
+             radial-gradient(ellipse at 4% 96%, rgba(130,221,45,.07), transparent 52%),
+             var(--canvas);
+           box-shadow: 0 1px 2px rgba(17,23,27,.05), 0 12px 34px rgba(17,23,27,.07); }
+  .panel::before { content: ''; position: absolute; z-index: -1; inset: 0;
+           background-image: radial-gradient(rgba(23,25,29,.12) .8px, transparent .8px); background-size: 20px 20px;
+           -webkit-mask-image: radial-gradient(ellipse at 60% 56%, black, transparent 66%);
+           mask-image: radial-gradient(ellipse at 60% 56%, black, transparent 66%); }
+  .b-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .p-brand { display: flex; align-items: center; gap: 11px; }
+  .mark { width: 34px; height: 34px; border-radius: 9px; background: var(--dark); display: grid; place-items: center;
+          box-shadow: 0 1px 3px rgba(14,18,20,.16), 0 6px 16px rgba(14,18,20,.16); flex: none; }
+  .b-name { font-size: 15px; font-weight: 720; letter-spacing: -.02em; }
+  .b-sub { font-size: 10px; letter-spacing: .08em; color: var(--ink-soft); text-transform: uppercase; }
+  .b-ed { color: var(--ink-soft); font-size: 10px; }
+  .copy { padding-top: clamp(20px, 2.6vh, 34px); }
+  .eyebrow { display: flex; align-items: center; gap: 8px; color: var(--ink-muted); font-size: 11px; margin-bottom: 12px; }
+  .eyebrow i { width: 17px; height: 2px; border-radius: 2px; background: var(--blue); }
+  .copy h1 { font-size: clamp(30px, 3vw, 42px); line-height: 1.2; font-weight: 730; letter-spacing: -.04em; }
+  .copy h1 span { color: var(--blue); }
+  .copy p { font-size: 12.5px; line-height: 1.9; color: var(--ink-muted); margin-top: 14px; }
+  .stage { flex: 1; min-height: 170px; position: relative; }
+  .journey { display: grid; grid-template-columns: repeat(3, minmax(0,1fr) 22px) minmax(0,1fr); padding: 5px;
+             border: 1px solid var(--line); border-radius: 14px; background: var(--groove-bg); column-gap: 8px; }
+  .jstep { padding: 9px 12px; border: 1px solid transparent; border-radius: 10px; color: var(--ink-muted);
+           background: none; cursor: pointer; text-align: left; font-family: inherit; transition: background .2s, color .2s, border-color .2s; }
+  .jstep:hover { background: rgba(23,25,29,.05); }
+  .jstep.on { background: #fff; border-color: rgba(23,25,29,.09); color: var(--acc, var(--blue)); box-shadow: 0 1px 2px rgba(17,23,27,.05); }
+  .jstep b { display: block; font-size: 12px; font-weight: 650; }
+  .jstep s { display: block; text-decoration: none; font-size: 10px; margin-top: 3px; color: var(--ink-soft); }
+  .jarr { display: grid; place-items: center; color: var(--ink-faint); font-size: 11px; }
+  .b-foot { display: flex; justify-content: space-between; padding-top: 14px; color: var(--ink-faint); font-size: 10px; }
+
+  /* ============ 方案 1：六边形状态机 ============ */
+  .hex-wrap { position: absolute; right: 4%; top: 50%; translate: 0 -50%; width: min(272px, 34vw); aspect-ratio: 1; }
+  .hex-wrap svg { width: 100%; height: 100%; overflow: visible; }
+  .hex-main, .hex-fix-a, .hex-fix-b { transition: stroke .6s var(--ease), opacity .6s var(--ease), stroke-dasharray .6s var(--ease); }
+  .hex-spoke { transition: opacity .6s var(--ease); }
+  .hex-core { transition: fill .6s var(--ease), r .6s var(--ease); }
+  .hex-gap-dot { transition: fill .6s var(--ease), opacity .6s var(--ease), r .6s var(--ease); }
+  .hex-gap-ring { transition: stroke .6s var(--ease), opacity .6s var(--ease); animation: ripple 2.4s ease-in-out infinite; }
+  @keyframes ripple { 0%, 100% { opacity: 0; } 50% { opacity: .55; } }
+
+  /* 状态：资产管理（0）——完整六边形 + 拓扑辐条 + accent 中心 */
+  .s0 .hex-fix-a, .s0 .hex-fix-b { opacity: 1; stroke: rgba(16,20,24,.2); }
+  .s0 .hex-gap-dot, .s0 .hex-gap-ring { opacity: 0; }
+  .s0 .hex-spoke { opacity: 1; }
+  /* 状态：漏洞分级（1）——缺口裸露 + accent 脉冲点 */
+  .s1 .hex-fix-a, .s1 .hex-fix-b { opacity: 0; }
+  .s1 .hex-spoke { opacity: 0; }
+  .s1 .hex-core { fill: rgba(16,20,24,.16); }
+  .s1 .hex-gap-ring { opacity: .55; }
+  /* 状态：修复工单（2）——缺口处虚线补丁 */
+  .s2 .hex-fix-a, .s2 .hex-fix-b { opacity: 1; stroke-dasharray: 1.2 1.6; }
+  .s2 .hex-gap-dot, .s2 .hex-gap-ring { opacity: 0; }
+  .s2 .hex-spoke { opacity: 0; }
+  /* 状态：复测闭环（3）——补全 + lime 呼吸点归位 */
+  .s3 .hex-fix-a, .s3 .hex-fix-b { opacity: 1; }
+  .s3 .hex-gap-dot { opacity: 1; }
+  .s3 .hex-spoke { opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { .hex-gap-ring { animation: none; } }
+
+  /* ============ 方案 2：终端联动（真实布局比例：宽 58% / 12.5px 字号 / 与标题区同栅格） ============ */
+  .term { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: min(58%, 620px);
+          background: var(--dark); border-radius: 14px; padding: 15px 20px 16px;
+          box-shadow: 0 14px 34px rgba(14,18,20,.30), inset 0 1px 0 rgba(255,255,255,.06); }
+  .term .dots { display: flex; gap: 5px; margin-bottom: 9px; }
+  .term .dots i { width: 7.5px; height: 7.5px; border-radius: 50%; background: rgba(255,255,255,.16); }
+  .term .dots i:first-child { background: rgba(130,221,45,.5); }
+  .term code { display: block; font-family: Consolas, ui-monospace, monospace; font-size: 12.5px; line-height: 2.0;
+               color: #b7c0c9; min-height: 25px; white-space: nowrap; overflow: hidden; }
+  .term code .p { color: #82dd2d; }
+  .term code .dim { color: #6b7683; }
+  .term code .ac { color: var(--acc, #82dd2d); }
+  .term code .cur { display: inline-block; width: 6px; height: 12px; background: #82dd2d; vertical-align: -2px; margin-left: 2px;
+                    animation: blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1>登录页品牌卡 · 按钮联动采样</h1>
+    <div class="sub">中部主视觉与底部四步按钮<b>双向联动</b>：点击按钮（或等自动轮播）看中部变化。<b>两张卡都可以真点。</b>
+      四阶段沿用项目分类色：资产天蓝 / 风险沙金 / 工单丁香 / 复测薄荷。</div>
+  </div>
+
+  <div class="list">
+    <!-- 方案 1：六边形状态机 -->
+    <div class="slot">
+      <div class="cap"><b>1 · 六边形状态机</b><span class="tag">品牌符号即流程图</span><span class="hint">点下面四个按钮试试 →</span>
+        新图标的缺口成为主角：资产=完整结构+资产拓扑辐条 → 漏洞=缺口裂开+沙金脉冲点 → 工单=缺口处丁香虚线补丁 → 闭环=补全+lime 点归位。
+        品牌标、新 favicon、中部主视觉是同一个符号的三种尺度；未来接真数据时，「闭环后永久补全」可以直接映射线上实际状态。</div>
+      <div class="panel" id="hexcard" data-mode="0">
+        <div class="b-top">
+          <div class="p-brand"><span class="mark"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M16.88 7.31 L18.5 8.25 V15.75 L12 19.5 L5.5 15.75 V8.25 L12 4.5 L14.25 5.63" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="15.6" cy="6.5" r="1.5" fill="#82dd2d"/></svg></span><div><div class="b-name">资产漏洞管理平台</div><div class="b-sub">VULN MANAGER</div></div></div>
+          <span class="b-ed">风险治理 · 全程可循</span>
+        </div>
+        <div class="copy">
+          <div class="eyebrow"><i></i>让风险治理，更进一步</div>
+          <h1>看清资产风险，<br><span>推动漏洞闭环。</span></h1>
+          <p>从资产梳理、漏洞发现到修复复测，让每一项风险都有迹可循。</p>
+        </div>
+        <div class="stage">
+          <div class="hex-wrap">
+            <svg viewBox="0 0 24 24">
+              <g class="hex-spokes" stroke="rgba(16,20,24,.14)" stroke-width="0.35">
+                <line class="hex-spoke" x1="12" y1="12" x2="12" y2="4.5"/>
+                <line class="hex-spoke" x1="12" y1="12" x2="18.5" y2="8.25"/>
+                <line class="hex-spoke" x1="12" y1="12" x2="18.5" y2="15.75"/>
+                <line class="hex-spoke" x1="12" y1="12" x2="12" y2="19.5"/>
+                <line class="hex-spoke" x1="12" y1="12" x2="5.5" y2="15.75"/>
+                <line class="hex-spoke" x1="12" y1="12" x2="5.5" y2="8.25"/>
+              </g>
+              <path class="hex-main" d="M16.88 7.31 L18.5 8.25 V15.75 L12 19.5 L5.5 15.75 V8.25 L12 4.5 L14.25 5.63"
+                    fill="none" stroke="rgba(16,20,24,.2)" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round"/>
+              <path class="hex-fix-a" d="M12 4.5 L14.25 5.63" fill="none" stroke="rgba(16,20,24,.2)" stroke-width="0.55" stroke-linecap="round"/>
+              <path class="hex-fix-b" d="M16.88 7.31 L18.5 8.25" fill="none" stroke="rgba(16,20,24,.2)" stroke-width="0.55" stroke-linecap="round"/>
+              <circle class="hex-gap-ring" cx="15.6" cy="6.5" r="2.1" fill="none" stroke="#c9962e" stroke-width="0.3"/>
+              <circle class="hex-gap-dot" cx="15.6" cy="6.5" r="0.8" fill="#82dd2d"/>
+              <circle class="hex-core" cx="12" cy="12" r="0.9" fill="#2b7fd4"/>
+            </svg>
+          </div>
+        </div>
+        <div class="journey">
+          <button type="button" class="jstep on" style="--acc:#2b7fd4"><b>资产管理</b><s>厘清资产全貌</s></button><span class="jarr">›</span>
+          <button type="button" class="jstep" style="--acc:#c9962e"><b>漏洞分级</b><s>聚焦关键风险</s></button><span class="jarr">›</span>
+          <button type="button" class="jstep" style="--acc:#9b7fd4"><b>修复工单</b><s>让修复有序推进</s></button><span class="jarr">›</span>
+          <button type="button" class="jstep" style="--acc:#2fbf9a"><b>复测闭环</b><s>让结果可追溯</s></button>
+        </div>
+        <div class="b-foot"><span>© 2026 资产漏洞管理平台</span><span>资产有序 · 风险可控</span></div>
+      </div>
+    </div>
+
+    <!-- 方案 2：终端联动 -->
+    <div class="slot">
+      <div class="cap"><b>2 · 终端联动</b><span class="tag">网安气质</span><span class="hint">点下面四个按钮试试 →</span>
+        点击阶段 → 深色终端逐字打出对应命令 + 一行结果（结果色随阶段分类色）。命令是虚构的品牌化 CLI（vulnctl），不指向真实数据。
+        尺寸已按真实布局校准：宽约 58%（~620px）、12.5px 等宽字、圆角与阴影升一档——在 380px 高的留白区里站得住，不和标题/流程条抢空间。</div>
+      <div class="panel" id="termcard" data-mode="0">
+        <div class="b-top">
+          <div class="p-brand"><span class="mark"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M16.88 7.31 L18.5 8.25 V15.75 L12 19.5 L5.5 15.75 V8.25 L12 4.5 L14.25 5.63" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="15.6" cy="6.5" r="1.5" fill="#82dd2d"/></svg></span><div><div class="b-name">资产漏洞管理平台</div><div class="b-sub">VULN MANAGER</div></div></div>
+          <span class="b-ed">风险治理 · 全程可循</span>
+        </div>
+        <div class="copy">
+          <div class="eyebrow"><i></i>让风险治理，更进一步</div>
+          <h1>看清资产风险，<br><span>推动漏洞闭环。</span></h1>
+          <p>从资产梳理、漏洞发现到修复复测，让每一项风险都有迹可循。</p>
+        </div>
+        <div class="stage">
+          <div class="term">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <code class="t-cmd"><span class="p">$</span> <span class="txt"></span><span class="cur"></span></code>
+            <code class="t-out"><span class="txt"></span></code>
+          </div>
+        </div>
+        <div class="journey">
+          <button type="button" class="jstep on" style="--acc:#2b7fd4"><b>资产管理</b><s>厘清资产全貌</s></button><span class="jarr">›</span>
+          <button type="button" class="jstep" style="--acc:#c9962e"><b>漏洞分级</b><s>聚焦关键风险</s></button><span class="jarr">›</span>
+          <button type="button" class="jstep" style="--acc:#9b7fd4"><b>修复工单</b><s>让修复有序推进</s></button><span class="jarr">›</span>
+          <button type="button" class="jstep" style="--acc:#2fbf9a"><b>复测闭环</b><s>让结果可追溯</s></button>
+        </div>
+        <div class="b-foot"><span>© 2026 资产漏洞管理平台</span><span>资产有序 · 风险可控</span></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const STAGES = [
+  { acc: '#2b7fd4', cmd: 'vulnctl assets --scan',  out: '✓ inventory synced <span class="dim">·</span> <span class="ac">0 drift</span>' },
+  { acc: '#c9962e', cmd: 'vulnctl vuln --triage',  out: '▲ findings flagged <span class="dim">·</span> <span class="ac">severity mapped</span>' },
+  { acc: '#9b7fd4', cmd: 'vulnctl fix --track',    out: '→ patch in progress <span class="dim">·</span> <span class="ac">owner assigned</span>' },
+  { acc: '#2fbf9a', cmd: 'vulnctl verify --close', out: '✓ loop closed <span class="dim">·</span> <span class="ac">risk cleared</span>' },
+]
+
+/* ---- 方案 1：六边形状态机 ---- */
+const hexcard = document.getElementById('hexcard')
+const hexSteps = [...hexcard.querySelectorAll('.jstep')]
+let hexTimer = setInterval(() => setHex((+hexcard.dataset.mode + 1) % 4), 3600)
+function setHex(i) {
+  hexcard.dataset.mode = i
+  hexcard.className = 'panel s' + i
+  hexSteps.forEach((b, k) => b.classList.toggle('on', k === i))
+}
+hexSteps.forEach((b, i) => b.addEventListener('click', () => {
+  clearInterval(hexTimer)
+  setHex(i)
+}))
+setHex(0)
+
+/* ---- 方案 2：终端联动（打字机） ---- */
+const termcard = document.getElementById('termcard')
+const termSteps = [...termcard.querySelectorAll('.jstep')]
+const cmdEl = termcard.querySelector('.t-cmd .txt')
+const outEl = termcard.querySelector('.t-out .txt')
+let typeTimer = null, autoTimer = null
+function typeCmd(text, done) {
+  clearInterval(typeTimer)
+  cmdEl.textContent = ''
+  outEl.innerHTML = ''
+  let i = 0
+  typeTimer = setInterval(() => {
+    cmdEl.textContent = text.slice(0, ++i)
+    if (i >= text.length) { clearInterval(typeTimer); done() }
+  }, 34)
+}
+function setTerm(i) {
+  termcard.dataset.mode = i
+  termcard.style.setProperty('--acc', STAGES[i].acc)
+  termSteps.forEach((b, k) => b.classList.toggle('on', k === i))
+  typeCmd(STAGES[i].cmd, () => { outEl.innerHTML = STAGES[i].out })
+}
+termSteps.forEach((b, i) => b.addEventListener('click', () => {
+  clearInterval(autoTimer)
+  setTerm(i)
+}))
+setTerm(0)
+autoTimer = setInterval(() => setTerm((+termcard.dataset.mode + 1) % 4), 4800)
+</script>
+</body>
+</html>

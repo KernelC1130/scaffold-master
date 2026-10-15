@@ -1,5 +1,9 @@
 # Changelog
 
+## template 分支（2026-10-15：抽取通用模板）
+
+- 自 main 切出 `template` 分支：删除漏洞业务全链（后端 scaffold-vuln 模块 + admin 依赖 + MapperScan + V3~V6 迁移 + Spring AI BOM；前端 views/vuln、api/vuln.ts、AiAssistant 悬浮窗、工作台安全态势卡）。工作台绿渐变还给登录脉搏；登录品牌区模板化（四步旅程改框架能力演示，品牌名/副标/版权绑 data/index.ts 的 APP 常量）；全局品牌改中性占位（管理台 · Scaffold）。Configs 去 AI 专属操作。docs/TEMPLATE.md 新项目接入指南。main 保留完整参考实现（漏洞业务 + AI）。
+
 ## 2026-10-15（修复：字典样本册入场闪帧）
 
 - 进样本册时卡片先空壳渲染可见 → 逐个字典拉数据各自重渲（闪几下）→ 全部到齐后 revealCascade 的 fromTo 起手把整面拽回 opacity:0 再逐个浮现。修复：加 is-entering 门闩（数据未就位藏住卡片，watch 每轮开头置位），revealCascade 接管后放行——入场只剩干净的级联浮现。

@@ -2,11 +2,11 @@
    品牌与全局配置：换品牌只改这里。
    ============================================================ */
 export const APP = Object.freeze({
-  name: 'Kintsugi',
-  shortName: '金缮',
-  subtitle: 'Kintsugi',
+  name: 'Admin',
+  shortName: '管理台',
+  subtitle: 'Scaffold',
   version: 'v1.0.0',
-  copyright: `© ${new Date().getFullYear()} 金缮 · Kintsugi`,
+  copyright: `© ${new Date().getFullYear()} 管理台 · Scaffold`,
 })
 
 /* ── 导航 ─────────────────────────────────────────────────── */

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" href="data:,">
+    <title>登录品牌 · 设计采样</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      import { createApp } from 'vue'
+      import Sample from './LoginBrandSample.vue'
+      import '../src/styles/tokens.css'
+      import '../src/styles/base.css'
+      import '../src/styles/materials.css'
+      import '../src/styles/components.css'
+      import '../src/styles/layout.css'
+      import '../src/styles/pages.css'
+      createApp(Sample).mount('#app')
+    </script>
+  </body>
+</html>

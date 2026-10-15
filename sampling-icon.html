@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>漏洞平台图标 · 采样</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  :root {
+    --bg: linear-gradient(180deg, #f9fafc, #f2f4f8);
+    --text: #0f1115; --text-sub: #6e7480;
+    --hairline: rgba(0,0,0,.07);
+    --dark: #131619; --lime: #82dd2d;
+  }
+  body { background: var(--bg); min-height: 100vh; font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+         color: var(--text); padding: 34px 26px 60px; }
+  .head { max-width: 1060px; margin: 0 auto 8px; }
+  .head h1 { font-size: 19px; font-weight: 600; }
+  .head .sub { color: var(--text-sub); font-size: 13px; margin-top: 7px; line-height: 1.7; }
+  .head .sub b { color: var(--text); font-weight: 600; }
+
+  .grid { max-width: 1060px; margin: 26px auto 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: #fff; border-radius: 14px; box-shadow: 0 0 0 1px var(--hairline), 0 2px 8px rgba(0,0,0,.04); padding: 20px; display: flex; gap: 18px; }
+  .big { flex: none; width: 128px; height: 128px; border-radius: 26px; }
+  .right { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+  .right h2 { font-size: 14.5px; }
+  .right h2 .tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; font-size: 10.5px;
+                   background: rgba(35,109,233,.1); color: #236de9; font-weight: 600; vertical-align: 1px; }
+  .right .desc { font-size: 12px; color: var(--text-sub); line-height: 1.65; margin-top: 5px; }
+
+  /* 伪标签页：亮 / 暗两条，favicon 实际 16px */
+  .tabs { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .tabbar { display: flex; gap: 4px; border-radius: 10px 10px 0 0; padding: 5px 6px 0; }
+  .tabbar.light { background: #dee1e6; }
+  .tabbar.dark { background: #202124; }
+  .tab { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 8px 8px 0 0;
+         font-size: 10.5px; white-space: nowrap; overflow: hidden; }
+  .tabbar.light .tab { background: #fff; color: #3c4043; }
+  .tabbar.dark .tab { background: #35363a; color: #e8eaed; }
+  .tab svg { flex: none; }
+  .tabbar.light .tab.dim { background: #f1f3f4; color: #5f6368; }
+  .tabbar.dark .tab.dim { background: #292a2d; color: #9aa0a6; }
+
+  /* 左上角 34px 实际大小预览（深色外壳上的真实语境） */
+  .inline-row { margin-top: 12px; display: flex; align-items: center; gap: 10px; background: #f6f8f7;
+                border-radius: 10px; padding: 9px 12px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); }
+  .inline-row .name { color: #fff; font-size: 13px; font-weight: 720; letter-spacing: -.02em; }
+  .inline-row .sub { color: #969ca8; font-size: 8.5px; letter-spacing: .08em; margin-top: 1px; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1>漏洞平台图标 · 采样</h1>
+    <div class="sub">六个方向，全部延续现有语言：<b>深色圆角方块底 + 细线几何 + lime 点缀</b>。
+      每张卡从左到右：128px 细节 → 标签页 16px 实际大小（亮/暗两种标签栏）→ 左上角 34px 实际语境。
+      小尺寸可读性是关键考验，选中后我把 favicon 与 BrandMark（外壳 + 登录页两处）一起落。</div>
+  </div>
+
+  <div class="grid">
+    <!-- A 盾形脉冲 -->
+    <div class="card">
+      <svg class="big" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/>
+        <path d="M12 4.8 L17.3 6.7 V11.2 C17.3 15 14.9 17.6 12 19.1 C9.1 17.6 6.7 15 6.7 11.2 V6.7 Z" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.4" stroke-linejoin="round"/>
+        <circle cx="12" cy="11" r="3.1" fill="none" stroke="rgba(130,221,45,.4)" stroke-width="1"/>
+        <circle cx="12" cy="11" r="1.7" fill="#82dd2d"/>
+      </svg>
+      <div class="right">
+        <h2>A · 盾形脉冲<span class="tag">安全经典</span></h2>
+        <div class="desc">细线盾牌 + 中心呼吸灯（lime 点 + 淡环）。把现在的「状态灯」装进「防」的形状里，语义直白：防护下的活体状态。盾形是安全产品最大公约数，稳但不够独特。</div>
+        <div class="tabs">
+          <div class="tabbar light"><div class="tab"><svg width="16" height="16" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M12 4.8 L17.3 6.7 V11.2 C17.3 15 14.9 17.6 12 19.1 C9.1 17.6 6.7 15 6.7 11.2 V6.7 Z" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.8"/><circle cx="12" cy="11" r="2.1" fill="#82dd2d"/></svg>资产管理 · 资产漏洞管理平台</div><div class="tab dim">导航</div></div>
+          <div class="tabbar dark"><div class="tab"><svg width="16" height="16" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M12 4.8 L17.3 6.7 V11.2 C17.3 15 14.9 17.6 12 19.1 C9.1 17.6 6.7 15 6.7 11.2 V6.7 Z" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.8"/><circle cx="12" cy="11" r="2.1" fill="#82dd2d"/></svg>资产管理 · 资产漏洞管理平台</div><div class="tab dim">导航</div></div>
+        </div>
+        <div class="inline-row">
+          <svg width="34" height="34" viewBox="0 0 24 24" style="flex:none"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M12 4.8 L17.3 6.7 V11.2 C17.3 15 14.9 17.6 12 19.1 C9.1 17.6 6.7 15 6.7 11.2 V6.7 Z" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.4" stroke-linejoin="round"/><circle cx="12" cy="11" r="3.1" fill="none" stroke="rgba(130,221,45,.4)" stroke-width="1"/><circle cx="12" cy="11" r="1.7" fill="#82dd2d"/></svg>
+          <div><div class="name">漏洞管理平台</div><div class="sub">VULN MANAGER</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B 雷达扫描 -->
+    <div class="card">
+      <svg class="big" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/>
+        <path d="M12 4.5 A7.5 7.5 0 1 0 19.5 12" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1.4" stroke-linecap="round"/>
+        <circle cx="12" cy="12" r="3.6" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+        <line x1="12" y1="12" x2="17.3" y2="6.7" stroke="rgba(255,255,255,.8)" stroke-width="1.4" stroke-linecap="round"/>
+        <circle cx="16.2" cy="15.8" r="1.6" fill="#82dd2d"/>
+      </svg>
+      <div class="right">
+        <h2>B · 雷达扫描<span class="tag">资产测绘</span></h2>
+        <div class="desc">同心弧 + 扫描半径线 + lime 目标点。讲「扫描资产、发现风险」的故事，和泳道、刻度环这些页内仪器图形最同源；动态版还可以让扫描线真的转起来。</div>
+        <div class="tabs">
+          <div class="tabbar light"><div class="tab"><svg width="16" height="16" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M12 4.5 A7.5 7.5 0 1 0 19.5 12" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1.8"/><circle cx="16.2" cy="15.8" r="1.8" fill="#82dd2d"/></svg>资产管理 · 资产漏洞管理平台</div><div class="tab dim">导航</div></div>
+          <div class="tabbar dark"><div class="tab"><svg width="16" height="16" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M12 4.5 A7.5 7.5 0 1 0 19.5 12" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1.8"/><circle cx="16.2" cy="15.8" r="1.8" fill="#82dd2d"/></svg>资产管理 · 资产漏洞管理平台</div><div class="tab dim">导航</div></div>
+        </div>
+        <div class="inline-row">
+          <svg width="34" height="34" viewBox="0 0 24 24" style="flex:none"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M12 4.5 A7.5 7.5 0 1 0 19.5 12" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1.4" stroke-linecap="round"/><circle cx="12" cy="12" r="3.6" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/><line x1="12" y1="12" x2="17.3" y2="6.7" stroke="rgba(255,255,255,.8)" stroke-width="1.4" stroke-linecap="round"/><circle cx="16.2" cy="15.8" r="1.6" fill="#82dd2d"/></svg>
+          <div><div class="name">漏洞管理平台</div><div class="sub">VULN MANAGER</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C 准星 -->
+    <div class="card">
+      <svg class="big" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/>
+        <line x1="12" y1="4.2" x2="12" y2="8.2" stroke="rgba(255,255,255,.85)" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="12" y1="15.8" x2="12" y2="19.8" stroke="rgba(255,255,255,.85)" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="4.2" y1="12" x2="8.2" y2="12" stroke="rgba(255,255,255,.85)" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="15.8" y1="12" x2="19.8" y2="12" stroke="rgba(255,255,255,.85)" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="12" cy="12" r="2" fill="#82dd2d"/>
+      </svg>
+      <div class="right">
+        <h2>C · 准星<span class="tag">定位风险</span></h2>
+        <div class="desc">四刻度 + 中心 lime 点。笔画最少、16px 下最锐利，直接呼应趋势图悬停准星的语言——「锁定目标」。极简到几乎没有叙事，靠克制取胜。</div>
+        <div class="tabs">
+          <div class="tabbar light"><div class="tab"><svg width="16" height="16" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/><line x1="12" y1="4.2" x2="12" y2="8.2" stroke="rgba(255,255,255,.85)" stroke-width="2"/><line x1="12" y1="15.8" x2="12" y2="19.8" stroke="rgba(255,255,255,.85)" stroke-width="2"/><line x1="4.2" y1="12" x2="8.2" y2="12" stroke="rgba(255,255,255,.85)" stroke-width="2"/><line x1="15.8" y1="12" x2="19.8" y2="12" stroke="rgba(255,255,255,.85)" stroke-width="2"/><circle cx="12" cy="12" r="2.2" fill="#82dd2d"/></svg>资产管理 · 资产漏洞管理平台</div><div class="tab dim">导航</div></div>
+          <div class="tabbar dark"><div class="tab"><svg width="16" height="16" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/><line x1="12" y1="4.2" x2="12" y2="8.2" stroke="rgba(255,255,255,.85)" stroke-width="2"/><line x1="12" y1="15.8" x2="12" y2="19.8" stroke="rgba(255,255,255,.85)" stroke-width="2"/><line x1="4.2" y1="12" x2="8.2" y2="12" stroke="rgba(255,255,255,.85)" stroke-width="2"/><line x1="15.8" y1="12" x2="19.8" y2="12" stroke="rgba(255,255,255,.85)" stroke-width="2"/><circle cx="12" cy="12" r="2.2" fill="#82dd2d"/></svg>资产管理 · 资产漏洞管理平台</div><div class="tab dim">导航</div></div>
+        </div>
+        <div class="inline-row">
+          <svg width="34" height="34" viewBox="0 0 24 24" style="flex:none"><rect width="24" height="24" rx="7" fill="#131619"/><line x1="12" y1="4.2" x2="12" y2="8.2" stroke="rgba(255,255,255,.85)" stroke-width="1.6" stroke-linecap="round"/><line x1="12" y1="15.8" x2="12" y2="19.8" stroke="rgba(255,255,255,.85)" stroke-width="1.6" stroke-linecap="round"/><line x1="4.2" y1="12" x2="8.2" y2="12" stroke="rgba(255,255,255,.85)" stroke-width="1.6" stroke-linecap="round"/><line x1="15.8" y1="12" x2="19.8" y2="12" stroke="rgba(255,255,255,.85)" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="2" fill="#82dd2d"/></svg>
+          <div><div class="name">漏洞管理平台</div><div class="sub">VULN MANAGER</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- D 六边形缺口 -->
+    <div class="card">
+      <svg class="big" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/>
+        <path d="M16.88 7.31 L18.5 8.25 V15.75 L12 19.5 L5.5 15.75 V8.25 L12 4.5 L14.25 5.63" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="15.6" cy="6.5" r="1.5" fill="#82dd2d"/>
+      </svg>
+      <div class="right">
+        <h2>D · 六边形缺口<span class="tag">漏洞本体</span></h2>
+        <div class="desc">完整蜂巢结构上缺了一段，缺口处亮一颗 lime 点——「漏洞 = 完整面上的洞」，叙事最贴题。彩蛋潜力：全部漏洞闭环后，界面上的这个缺口可以补全。</div>
+        <div class="tabs">
+          <div class="tabbar light"><div class="tab"><svg width="16" height="16" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M16.88 7.31 L18.5 8.25 V15.75 L12 19.5 L5.5 15.75 V8.25 L12 4.5 L14.25 5.63" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="15.6" cy="6.5" r="1.8" fill="#82dd2d"/></svg>资产管理 · 资产漏洞管理平台</div><div class="tab dim">导航</div></div>
+          <div class="tabbar dark"><div class="tab"><svg width="16" height="16" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M16.88 7.31 L18.5 8.25 V15.75 L12 19.5 L5.5 15.75 V8.25 L12 4.5 L14.25 5.63" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="15.6" cy="6.5" r="1.8" fill="#82dd2d"/></svg>资产管理 · 资产漏洞管理平台</div><div class="tab dim">导航</div></div>
+        </div>
+        <div class="inline-row">
+          <svg width="34" height="34" viewBox="0 0 24 24" style="flex:none"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M16.88 7.31 L18.5 8.25 V15.75 L12 19.5 L5.5 15.75 V8.25 L12 4.5 L14.25 5.63" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="15.6" cy="6.5" r="1.5" fill="#82dd2d"/></svg>
+          <div><div class="name">漏洞管理平台</div><div class="sub">VULN MANAGER</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E V 字标 -->
+    <div class="card">
+      <svg class="big" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/>
+        <path d="M7.4 6.5 L12 17.3 L16.6 6.5" fill="none" stroke="#82dd2d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="right">
+        <h2>E · V 字标<span class="tag">品牌字母</span></h2>
+        <div class="desc">VULN 的 V，lime 主色直接上阵。最「logo」的一个，小尺寸辨识度极高；但 V 字标在工具产品里烂大街，且丢掉了状态灯的语言连续性。</div>
+        <div class="tabs">
+          <div class="tabbar light"><div class="tab"><svg width="16" height="16" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M7.4 6.5 L12 17.3 L16.6 6.5" fill="none" stroke="#82dd2d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>资产管理 · 资产漏洞管理平台</div><div class="tab dim">导航</div></div>
+          <div class="tabbar dark"><div class="tab"><svg width="16" height="16" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M7.4 6.5 L12 17.3 L16.6 6.5" fill="none" stroke="#82dd2d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>资产管理 · 资产漏洞管理平台</div><div class="tab dim">导航</div></div>
+        </div>
+        <div class="inline-row">
+          <svg width="34" height="34" viewBox="0 0 24 24" style="flex:none"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M7.4 6.5 L12 17.3 L16.6 6.5" fill="none" stroke="#82dd2d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><div class="name">漏洞管理平台</div><div class="sub">VULN MANAGER</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- F 指示灯改良 -->
+    <div class="card">
+      <svg class="big" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/>
+        <path d="M5.5 8 V5.5 H8" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16 5.5 H18.5 V8" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M18.5 16 V18.5 H16" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 18.5 H5.5 V16" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="12" r="5" fill="none" stroke="rgba(130,221,45,.35)" stroke-width="1"/>
+        <circle cx="12" cy="12" r="2.3" fill="#82dd2d"/>
+      </svg>
+      <div class="right">
+        <h2>F · 指示灯改良<span class="tag">最小改动</span></h2>
+        <div class="desc">现在的绿点不动，加一圈脉冲环和四角取景刻度，从「一颗灯」升级成「仪器上的活动指示灯」。与现状连续性最强，代价是图形张力最弱。</div>
+        <div class="tabs">
+          <div class="tabbar light"><div class="tab"><svg width="16" height="16" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/><circle cx="12" cy="12" r="5" fill="none" stroke="rgba(130,221,45,.4)" stroke-width="1.4"/><circle cx="12" cy="12" r="2.6" fill="#82dd2d"/></svg>资产管理 · 资产漏洞管理平台</div><div class="tab dim">导航</div></div>
+          <div class="tabbar dark"><div class="tab"><svg width="16" height="16" viewBox="0 0 24 24"><rect width="24" height="24" rx="7" fill="#131619"/><circle cx="12" cy="12" r="5" fill="none" stroke="rgba(130,221,45,.4)" stroke-width="1.4"/><circle cx="12" cy="12" r="2.6" fill="#82dd2d"/></svg>资产管理 · 资产漏洞管理平台</div><div class="tab dim">导航</div></div>
+        </div>
+        <div class="inline-row">
+          <svg width="34" height="34" viewBox="0 0 24 24" style="flex:none"><rect width="24" height="24" rx="7" fill="#131619"/><path d="M5.5 8 V5.5 H8" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 5.5 H18.5 V8" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 16 V18.5 H16" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 18.5 H5.5 V16" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="5" fill="none" stroke="rgba(130,221,45,.35)" stroke-width="1"/><circle cx="12" cy="12" r="2.3" fill="#82dd2d"/></svg>
+          <div><div class="name">漏洞管理平台</div><div class="sub">VULN MANAGER</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
