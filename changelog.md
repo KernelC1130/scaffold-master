@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-15（泳道气泡置顶：Teleport + fixed）
+
+- 下翻仍是治标——气泡还关在 overflow 容器里。改为 <Teleport to="body"> + position:fixed 视口坐标（onEnter 直接用块的 viewport rect，上下翻转逻辑按视口余量判断），z-index 提到 50：任何 overflow 容器都裁不到，天然顶层。
+
 ## 2026-10-15（修复：泳道气泡被裁）
 
 - Dashboard 泳道 fixedLanes=5 使 .swim-body 带 overflowY:auto，气泡固定向上弹（translate -100%-8px），悬停首泳道块时上半截被容器顶裁掉。修复：onEnter 检测头顶空间（<118px）时锚定块底下翻（.swim-tip.is-below → translate -50% 8px）。

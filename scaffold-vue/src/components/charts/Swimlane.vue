@@ -87,13 +87,10 @@ function blockStyle(block: TimelineBlock) {
 
 function onEnter(event: PointerEvent, lane: SwimlaneLane, block: TimelineBlock) {
   hover.value = { lane, block }
-  const box = plot.value?.getBoundingClientRect()
   const target = (event.currentTarget as HTMLElement).getBoundingClientRect()
-  if (!box) return
-  const y = target.top - box.top
-  // 气泡高约 110px：头顶放不下就锚定块底、向下展开
-  tipBelow.value = y < 118
-  tipPos.value = { x: target.left - box.left + target.width / 2, y: tipBelow.value ? y + target.height : y }
+  // 视口坐标 + fixed 定位：气泡 Teleport 到 body，任何 overflow 容器都裁不到
+  tipBelow.value = target.top < 118
+  tipPos.value = { x: target.left + target.width / 2, y: tipBelow.value ? target.bottom : target.top }
 }
 
 /* 现在线：对齐到整分钟后每 60s 推进 */
@@ -149,13 +146,15 @@ onBeforeUnmount(() => window.clearInterval(timer))
         </div>
       </div>
       <div v-if="now !== null" class="swim-now" :style="{ left: `calc(var(--swim-label-w) + (100% - var(--swim-label-w)) * ${frac(now)})` }" aria-hidden="true" />
-      <div v-if="hover" ref="tip" :class="['swim-tip', 'm-float', { 'is-below': tipBelow }]" :style="{ left: `${tipPos.x}px`, top: `${tipPos.y}px` }">
-        <span class="eyebrow">{{ hover.lane.module }}</span>
-        <b class="tnum">{{ fmt(hover.block.startSec) }} – {{ fmt(hover.block.endSec) }}</b>
-        <span class="swim-tip-row"><span>操作</span><b class="tnum">{{ hover.block.count }} 次</b></span>
-        <span class="swim-tip-row"><span>失败</span><b :class="['tnum', { 'is-red': hover.block.failed }]">{{ hover.block.failed }}</b></span>
-        <span class="swim-tip-row"><span>最大耗时</span><b class="tnum">{{ hover.block.maxCost }} ms</b></span>
-      </div>
+      <Teleport to="body">
+        <div v-if="hover" ref="tip" :class="['swim-tip', 'm-float', { 'is-below': tipBelow }]" :style="{ left: `${tipPos.x}px`, top: `${tipPos.y}px` }">
+          <span class="eyebrow">{{ hover.lane.module }}</span>
+          <b class="tnum">{{ fmt(hover.block.startSec) }} – {{ fmt(hover.block.endSec) }}</b>
+          <span class="swim-tip-row"><span>操作</span><b class="tnum">{{ hover.block.count }} 次</b></span>
+          <span class="swim-tip-row"><span>失败</span><b :class="['tnum', { 'is-red': hover.block.failed }]">{{ hover.block.failed }}</b></span>
+          <span class="swim-tip-row"><span>最大耗时</span><b class="tnum">{{ hover.block.maxCost }} ms</b></span>
+        </div>
+      </Teleport>
       <p v-if="hiddenCount && showHiddenHint" class="swim-more faint">另有 {{ hiddenCount }} 个模块未显示</p>
     </div>
   </div>
