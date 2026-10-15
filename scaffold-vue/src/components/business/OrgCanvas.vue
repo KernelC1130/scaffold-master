@@ -100,6 +100,13 @@ function fit(animate = true) {
   apply(animate)
 }
 
+/** 按钮缩放以树的当前可视中心为锚——fit 后树偏画布上部，锚视口中心会以空白为锚导致画面漂移 */
+function zoomBy(factor: number) {
+  const box = viewportBox()
+  if (!box || !layout.value.width) return
+  zoomAt(factor, view.x + (layout.value.width * view.k) / 2, view.y + (layout.value.height * view.k) / 2)
+}
+
 function focusNode(id: number) {
   const node = layout.value.nodes.find(n => n.dept.id === id)
   const box = viewportBox()
@@ -295,8 +302,8 @@ defineExpose({ fit, focusNode })
     <div class="org-panel is-br"><slot name="br" /></div>
 
     <div class="org-controls m-float" role="group" aria-label="画布缩放">
-      <IconButton name="plus" label="放大" small @click="zoomAt(1.2)" />
-      <IconButton name="minus" label="缩小" small @click="zoomAt(1 / 1.2)" />
+      <IconButton name="plus" label="放大" small @click="zoomBy(1.2)" />
+      <IconButton name="minus" label="缩小" small @click="zoomBy(1 / 1.2)" />
       <IconButton name="fit" label="适应画布" small @click="fit()" />
     </div>
   </div>
