@@ -21,10 +21,18 @@
 
 初始账号：`admin`，密码为初始密码 `Yy@123456`（首登后可在个人中心修改）。
 
+### 必填环境变量
+
+| 变量 | 说明 |
+| --- | --- |
+| `JWT_SECRET` | JWT 签名密钥，**无默认值、缺失启动失败**，要求 ≥32 字节。生成：`openssl rand -base64 32` |
+
+其余（`DB_HOST / DB_PORT / DB_NAME / DB_USERNAME / DB_PASSWORD / REDIS_HOST / REDIS_PORT`）有默认值，可用环境变量覆盖（数据库账号密码务必改掉 root/root 默认）。
+
 ## 3. 启动与验证清单
 
 ```bash
-# 后端
+# 后端（PowerShell 示例：$env:JWT_SECRET="..."; mvn ...）
 cd scaffold-system && mvn -pl scaffold-admin -am spring-boot:run
 # 前端
 cd scaffold-vue && npm install && npm run dev
@@ -52,8 +60,7 @@ cd scaffold-vue && npm install && npm run dev
 | `scaffold-vue/src/data/index.ts` | `APP` 常量：name（标题后缀）/ shortName / subtitle / copyright |
 | `scaffold-vue/index.html` | 静态 `<title>` |
 | `scaffold-vue/src/components/business/LoginBrandPanel.vue` | 登录品牌区大标题与副文案（品牌名/副标/版权已绑 APP 常量） |
-| `scaffold-vue/public/favicon.*`、`icon-*.png` | 图标（ico/png/svg/192/512） |
-| `scaffold-vue/public/manifest.json`、`sw.js` | PWA 名称与缓存版本号（换静态资源时升版本） |
+| `scaffold-vue/index.html` | favicon（内联 data-URI SVG，改 svg 内容即可） |
 | `scaffold-system/scaffold-admin/src/main/resources/application.yml` | 后端侧名称（如有） |
 
 ## 6. 约定与已知问题
