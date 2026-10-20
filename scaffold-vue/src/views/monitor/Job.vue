@@ -1,22 +1,35 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { nextTick, onMounted, reactive, ref, watch } from 'vue'
 import DataTable, { type Column } from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import { Drawer, Field, Segmented, Select, Tag, TextInput } from '@/components/ui'
 import { ListPage, PermissionButton } from '@/components/business'
+import { gsap, EASE } from '@/composables/motion'
 import { systemApi, type SysJobRow, type SysJobLogRow, type SysJobPayload } from '@/api'
 import { useListPage } from '@/composables/list'
 import { confirm } from '@/composables/confirm'
 import { pushToast, toastError } from '@/composables/toast'
 
-/** 视图持久化：两列表 v-show 常驻（切换零渲染），仅记录上次所在视图 */
+/** 视图记忆（localStorage）+ 双列表 v-show 常驻 + 切换时轻量 fade 入场（不用全页 gsap） */
 const view = ref<'table' | 'logs'>((localStorage.getItem('monitor-job-view') as 'table' | 'logs') || 'table')
 const VIEWS = [
   { label: '任务', value: 'table' },
   { label: '执行日志', value: 'logs' },
 ]
 
-/** 容器挂载后补 entrance-ready（本页不经 Transition，reveal 依赖该标记显示） */
+const tableView = ref()
+const logView = ref()
+
+watch(view, async v => {
+  localStorage.setItem('monitor-job-view', v)
+  await nextTick()
+  const el = (v === 'table' ? tableView : logView).value?.$el
+  if (!el) return
+  const items = el.querySelectorAll('.reveal')
+  if (items.length) gsap.fromTo(items, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35, ease: EASE.reveal, stagger: 0.05, clearProps: 'transform' })
+})
+
+/** 容器挂载后补 entrance-ready（reveal 依赖该标记显示） */
 const hostEl = ref<HTMLElement | null>(null)
 onMounted(() => {
   if (hostEl.value) hostEl.value.dataset.entranceReady = 'true'
@@ -198,7 +211,7 @@ async function saveJob() {
 
 <template>
   <div ref="hostEl" class="page-host" data-entrance-ready="true">
-    <ListPage v-show="view === 'table'" title="定时任务" desc="基于 Quartz 的任务调度管理，支持 cron 表达式、暂停/恢复与立即执行。" table-title="任务列表" :list="jobList" :columns="JOB_COLUMNS" fit-viewport :min-width="980">
+    <ListPage v-show="view === 'table'" ref="tableView" title="定时任务" desc="基于 Quartz 的任务调度管理，支持 cron 表达式、暂停/恢复与立即执行。" table-title="任务列表" :list="jobList" :columns="JOB_COLUMNS" fit-viewport :min-width="980">
       <template #actions>
         <Segmented v-model="view" label="视图" :options="VIEWS" />
         <PermissionButton perm="monitor:job:add" variant="primary" icon="plus" @click="openCreate">新增任务</PermissionButton>
@@ -238,7 +251,7 @@ async function saveJob() {
       </template>
     </ListPage>
 
-    <ListPage v-show="view === 'logs'" title="执行日志" desc="定时任务的每次触发都会在此留痕：成功与失败、异常摘要与起止时间。" table-title="执行记录" :list="logList" :columns="LOG_COLUMNS" fit-viewport :min-width="980">
+    <ListPage v-show="view === 'logs'" ref="logView" title="执行日志" desc="定时任务的每次触发都会在此留痕：成功与失败、异常摘要与起止时间。" table-title="执行记录" :list="logList" :columns="LOG_COLUMNS" fit-viewport :min-width="980">
       <template #actions>
         <Segmented v-model="view" label="视图" :options="VIEWS" />
         <PermissionButton perm="monitor:job:remove" variant="secondary" icon="trash" danger @click="clearLogs">清空日志</PermissionButton>
@@ -310,11 +323,6 @@ async function saveJob() {
   min-height: 0;
   display: flex;
   flex-direction: column;
-}
-.logs-view {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
 }
 .form-stack {
   display: flex;
