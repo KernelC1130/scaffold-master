@@ -8,7 +8,6 @@ import { systemApi, type SysJobRow, type SysJobLogRow, type SysJobPayload } from
 import { useListPage } from '@/composables/list'
 import { confirm } from '@/composables/confirm'
 import { pushToast, toastError } from '@/composables/toast'
-import { revealPage } from '@/composables/motion'
 
 /** 视图：table = 任务列表（默认表格视图）；logs = 执行日志（alt 视图，轻量切换无全页动画） */
 const view = ref<'table' | 'logs'>('table')
@@ -126,7 +125,7 @@ const form = reactive<SysJobPayload>({
   remark: '',
 })
 const pageEl = ref<{ $el: HTMLElement } | null>(null)
-onMounted(() => revealPage(pageEl.value?.$el ?? null))
+onMounted(() => { if (pageEl.value?.$el) pageEl.value.$el.dataset.entranceReady = 'true' })
 const cronState = ref<'idle' | 'ok' | 'bad'>('idle')
 
 const MISFIRE_OPTIONS = [
@@ -297,8 +296,8 @@ async function saveJob() {
     </div>
     <template #footer>
       <div style="display: flex; justify-content: flex-end; gap: 10px">
-        <button type="button" class="btn-ghost" @click="drawerOpen = false">取消</button>
-        <button type="button" class="btn-primary" @click="saveJob">保存</button>
+        <button type="button" class="drawer-btn-ghost" @click="drawerOpen = false">取消</button>
+        <button type="button" class="drawer-btn-primary" @click="saveJob">保存</button>
       </div>
     </template>
   </Drawer>
@@ -330,20 +329,20 @@ async function saveJob() {
   font-size: 12.5px;
   cursor: pointer;
 }
-.btn-ghost,
-.btn-primary {
+.drawer-btn-ghost,
+.drawer-btn-primary {
   border-radius: 9px;
   padding: 8px 18px;
   font: inherit;
   font-size: 13px;
   cursor: pointer;
 }
-.btn-ghost {
+.drawer-btn-ghost {
   border: 1px solid var(--hairline, rgba(0, 0, 0, 0.1));
   background: none;
   color: var(--text, #1a1c20);
 }
-.btn-primary {
+.drawer-btn-primary {
   border: 0;
   background: rgb(65, 118, 230);
   color: #fff;

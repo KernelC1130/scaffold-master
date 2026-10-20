@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-20（定时任务模块上线）
+
+- quartz 移植为 scaffold 风格（com.scaffold.system.job 包 18 文件）：SysJob/SysJobLog 注解 SQL Mapper、ScheduleUtils/JobInvokeUtil/CronUtils、AbstractQuartzJob 双执行器；调度走 RAMJobStore 内存模式（@PostConstruct 从 sys_job 加载，QRTZ 表仅建在 scaffold_system 备集群化，实际不读）。invoke_target 白名单仅放行 job.task 两个包（com.scaffold.system.job.task. / com.scaffold.vuln.ai.task.），防页面配置任意 bean 方法调用。
+- 菜单：系统监控 → 定时任务（203，monitor/job/index → Job.vue）+ 6 按钮权限（query/add/edit/remove/changeStatus/run）。前端双视图走 ListPage 的 alt-view（对齐菜单星图/部门画布的轻量切换）：任务表格视图 + 执行日志 alt 视图，页头 Segmented 按视图条件渲染新增/清空按钮；fit-viewport 固定查询区与分页；新增/编辑 Drawer 含 cron 在线校验（/monitor/cron-check）。
+- AI 对话清理迁入 sys_job（jobTasks.aiChatClean，每日 02:00，默认启用）；AiChatCleanup 的 @Scheduled 移除，业务方法保留由 JobTasks 委托调用——@MapperScan 补 com.scaffold.system.job.mapper。
+- 教训三连：①服务 unit 名是 scaffold-vuln.service（ruoyi-vuln 是不存在的旧记录名，systemctl 查它会误报服务停止）；②本地构建链 = pnpm@11 + Go 便携包（GOPROXY=goproxy.cn）+ 全路径 mvn.cmd（PATH 无 mvn），heredoc 写代码文件会吃转义——一律用编辑工具；③alt 视图切换空白排查：先查 .page 的 data-entrance-ready 与 alt-view 是否在 DOM（v-if 没触发是状态问题不是样式问题）。
+- 已知边界：日志视图的分页由 alt 内自绘 Pagination 承担；引用机器人消息的触发（replyToMessage）尚未纳入白名单判定，出现漏唤后补。
+
+
 ## 2026-10-15（修复：字典样本册入场闪帧）
 
 - 进样本册时卡片先空壳渲染可见 → 逐个字典拉数据各自重渲（闪几下）→ 全部到齐后 revealCascade 的 fromTo 起手把整面拽回 opacity:0 再逐个浮现。修复：加 is-entering 门闩（数据未就位藏住卡片，watch 每轮开头置位），revealCascade 接管后放行——入场只剩干净的级联浮现。
