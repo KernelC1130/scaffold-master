@@ -4,7 +4,7 @@ import DataTable, { type Column } from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import { Drawer, Field, Segmented, Select, Tag, TextInput } from '@/components/ui'
 import { ListPage, PermissionButton } from '@/components/business'
-import { gsap, EASE } from '@/composables/motion'
+import { revealPage } from '@/composables/motion'
 import { systemApi, type SysJobRow, type SysJobLogRow, type SysJobPayload } from '@/api'
 import { useListPage } from '@/composables/list'
 import { confirm } from '@/composables/confirm'
@@ -24,9 +24,7 @@ watch(view, async v => {
   localStorage.setItem('monitor-job-view', v)
   await nextTick()
   const el = (v === 'table' ? tableView : logView).value?.$el
-  if (!el) return
-  const items = el.querySelectorAll('.reveal')
-  if (items.length) gsap.fromTo(items, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35, ease: EASE.reveal, stagger: 0.05, clearProps: 'transform' })
+  if (el) revealPage(el)
 })
 
 /** 容器挂载后补 entrance-ready（reveal 依赖该标记显示） */
