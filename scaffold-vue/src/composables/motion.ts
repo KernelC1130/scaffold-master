@@ -24,8 +24,8 @@ export const DUR = Object.freeze({
   hoverIn: 0.34,
   hoverOut: 0.42,
   slide: 0.52,
-  pageOut: 0.18,
-  pageIn: 0.62,
+  pageOut: 0.1,
+  pageIn: 0.3,
   overlayIn: 0.42,
   overlayOut: 0.2,
 })
