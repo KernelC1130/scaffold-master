@@ -4,7 +4,7 @@ import DataTable, { type Column } from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import { Drawer, Field, Segmented, Select, Tag, TextInput } from '@/components/ui'
 import { ListPage, PermissionButton } from '@/components/business'
-import { revealPage } from '@/composables/motion'
+import { gsap, EASE } from '@/composables/motion'
 import { systemApi, type SysJobRow, type SysJobLogRow, type SysJobPayload } from '@/api'
 import { useListPage } from '@/composables/list'
 import { confirm } from '@/composables/confirm'
@@ -24,7 +24,9 @@ watch(view, async v => {
   localStorage.setItem('monitor-job-view', v)
   await nextTick()
   const el = (v === 'table' ? tableView : logView).value?.$el
-  if (el) revealPage(el)
+  if (!el) return
+  // 仿 OrgCanvas：视图挂载后内容轻量上浮入场
+  gsap.fromTo(el, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.35, ease: EASE.reveal, clearProps: 'opacity,transform' })
 })
 
 /** 容器挂载后补 entrance-ready（reveal 依赖该标记显示） */
