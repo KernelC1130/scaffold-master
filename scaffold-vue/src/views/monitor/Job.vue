@@ -3,7 +3,7 @@ import { onMounted, reactive, ref, watch } from 'vue'
 import DataTable, { type Column } from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import Panel from '@/components/ui/Panel.vue'
-import { Drawer, Field, Segmented, Select, Tag, TextInput } from '@/components/ui'
+import { Drawer, Field, IconButton, Segmented, Select, Tag, TextInput } from '@/components/ui'
 import { ListPage, PermissionButton } from '@/components/business'
 import { systemApi, type SysJobRow, type SysJobLogRow, type SysJobPayload } from '@/api'
 import { useListPage } from '@/composables/list'
@@ -197,7 +197,7 @@ async function saveJob() {
 </script>
 
 <template>
-  <ListPage ref="pageEl" title="定时任务" desc="基于 Quartz 的任务调度管理，支持 cron 表达式、暂停/恢复与立即执行。" table-title="任务列表" :list="jobList" :columns="JOB_COLUMNS" fit-viewport :alt-view="view === 'logs'" :min-width="980">
+  <ListPage ref="pageEl" title="定时任务" desc="基于 Quartz 的任务调度管理，支持 cron 表达式、暂停/恢复与立即执行。" table-title="任务列表" :list="jobList" :columns="JOB_COLUMNS" fit-viewport alt-fit :alt-view="view === 'logs'" :min-width="980">
     <template #actions>
       <Segmented v-model="view" label="视图" :options="VIEWS" />
       <PermissionButton v-if="view === 'table'" perm="monitor:job:add" variant="primary" icon="plus" @click="openCreate">新增任务</PermissionButton>
@@ -258,6 +258,9 @@ async function saveJob() {
           </Field>
         </form>
         <Panel class="list-page-panel" title="执行记录" :meta="`共 ${logList.total.value} 条`">
+          <template #tools>
+            <IconButton name="refresh" label="刷新" bordered @click="logList.load()" />
+          </template>
           <DataTable :columns="LOG_COLUMNS" :data="logList.rows.value" :loading="logList.loading.value" :min-width="900" row-key="jobLogId">
             <template #cell-status="{ row }"><Tag :tone="row.status === '0' ? 'ok' : 'danger'" dot>{{ row.status === '0' ? '成功' : '失败' }}</Tag></template>
             <template #cell-jobMessage="{ row }">
@@ -318,10 +321,21 @@ async function saveJob() {
 
 <style scoped>
 .logs-view {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+.logs-view > .list-page-panel {
+  flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.logs-view > .list-page-panel > .table-wrap {
+  flex: 1;
+  overscroll-behavior: contain;
 }
 .form-stack {
   display: flex;
