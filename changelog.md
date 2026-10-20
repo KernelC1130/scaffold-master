@@ -7,6 +7,7 @@
 - AI 对话清理迁入 sys_job（jobTasks.aiChatClean，每日 02:00，默认启用）；AiChatCleanup 的 @Scheduled 移除，业务方法保留由 JobTasks 委托调用——@MapperScan 补 com.scaffold.system.job.mapper。
 - 教训三连：①服务 unit 名是 scaffold-vuln.service（ruoyi-vuln 是不存在的旧记录名，systemctl 查它会误报服务停止）；②本地构建链 = pnpm@11 + Go 便携包（GOPROXY=goproxy.cn）+ 全路径 mvn.cmd（PATH 无 mvn），heredoc 写代码文件会吃转义——一律用编辑工具；③alt 视图切换空白排查：先查 .page 的 data-entrance-ready 与 alt-view 是否在 DOM（v-if 没触发是状态问题不是样式问题）。
 - 已知边界：日志视图的分页由 alt 内自绘 Pagination 承担；引用机器人消息的触发（replyToMessage）尚未纳入白名单判定，出现漏唤后补。
+- 后续打磨（同日）：执行日志视图补 Panel 包装（对齐任务列表的白卡/圆角/刷新按钮）+ 顶部筛选面板 + alt-fit 视口固定（panel 撑满、分页贴底）；Job 页挂载兜底设置 entrance-ready（该页 Transition enter 钩子未触发导致 reveal 全透明的保险，待定位钩子未触发原因）；视图选择持久化 localStorage（monitor-job-view）。
 - 后续打磨（同日）：执行日志视图补 alt-fit（panel 撑满视口、分页贴底，对齐任务列表）+ 面板刷新按钮 + 顶部筛选面板；页头新增按钮被 Drawer 的 scoped .btn-primary 撞全局类（9px 圆角+错色）——Drawer 按钮类名改 drawer-btn-*；Job 页挂载兜底设置 entrance-ready（Transition enter 钩子对该页未触发的保险）；视图选择持久化 localStorage（monitor-job-view）；全局切页动画提速 pageOut 0.18→0.1 / pageIn 0.62→0.3（out-in 串行 0.8s→0.4s，切页更跟手）。
 
 
