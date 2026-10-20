@@ -7,8 +7,15 @@ import { systemApi, type SysJobRow, type SysJobLogRow, type SysJobPayload } from
 import { useListPage } from '@/composables/list'
 import { confirm } from '@/composables/confirm'
 import { pushToast, toastError } from '@/composables/toast'
+import { revealPage } from '@/composables/motion'
 
 const tab = ref<'jobs' | 'logs'>('jobs')
+
+/** v-if 重建的 ListPage 是新 DOM：挂载时逐个设置 entrance-ready，否则 reveal 元素停留透明 */
+function activatePage(el: unknown) {
+  const root = (el as { $el?: HTMLElement } | null)?.$el
+  if (root) revealPage(root)
+}
 
 /* ---------------- 任务列表 ---------------- */
 
@@ -193,7 +200,7 @@ const drawerTitle = computed(() => (editingId.value ? '编辑定时任务' : '�
 
 <template>
   <div class="page-host">
-  <ListPage v-if="tab === 'jobs'" title="定时任务" desc="基于 Quartz 的任务调度管理：任务以「bean名.方法名(参数)」形式指向白名单包内的执行入口，支持 cron 表达式、暂停/恢复与立即执行。" table-title="任务列表" :list="jobList" :columns="JOB_COLUMNS" :min-width="980">
+  <ListPage v-if="tab === 'jobs'" ref="activatePage" fit-viewport title="定时任务" desc="基于 Quartz 的任务调度管理：任务以「bean名.方法名(参数)」形式指向白名单包内的执行入口，支持 cron 表达式、暂停/恢复与立即执行。" table-title="任务列表" :list="jobList" :columns="JOB_COLUMNS" :min-width="980">
     <template #actions>
       <PermissionButton perm="monitor:job:add" variant="secondary" icon="plus" @click="openCreate">新增任务</PermissionButton>
     </template>
@@ -231,7 +238,7 @@ const drawerTitle = computed(() => (editingId.value ? '编辑定时任务' : '�
     </template>
   </ListPage>
 
-  <ListPage v-else title="执行日志" desc="定时任务的每次触发都会在此留痕：成功与失败、异常摘要与起止时间。" table-title="执行记录" :list="logList" :columns="LOG_COLUMNS" :min-width="980">
+  <ListPage v-else ref="activatePage" fit-viewport title="执行日志" desc="定时任务的每次触发都会在此留痕：成功与失败、异常摘要与起止时间。" table-title="执行记录" :list="logList" :columns="LOG_COLUMNS" :min-width="980">
     <template #actions>
       <PermissionButton perm="monitor:job:remove" variant="secondary" icon="trash" danger @click="clearLogs">清空日志</PermissionButton>
     </template>
