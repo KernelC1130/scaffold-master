@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import DataTable, { type Column } from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import { Drawer, Field, Segmented, Select, Tag, TextInput } from '@/components/ui'
@@ -8,6 +8,7 @@ import { systemApi, type SysJobRow, type SysJobLogRow, type SysJobPayload } from
 import { useListPage } from '@/composables/list'
 import { confirm } from '@/composables/confirm'
 import { pushToast, toastError } from '@/composables/toast'
+import { revealPage } from '@/composables/motion'
 
 /** 视图：table = 任务列表（默认表格视图）；logs = 执行日志（alt 视图，轻量切换无全页动画） */
 const view = ref<'table' | 'logs'>('table')
@@ -124,6 +125,8 @@ const form = reactive<SysJobPayload>({
   concurrent: '1',
   remark: '',
 })
+const pageEl = ref<{ $el: HTMLElement } | null>(null)
+onMounted(() => revealPage(pageEl.value?.$el ?? null))
 const cronState = ref<'idle' | 'ok' | 'bad'>('idle')
 
 const MISFIRE_OPTIONS = [
@@ -192,7 +195,7 @@ async function saveJob() {
 </script>
 
 <template>
-  <ListPage title="定时任务" desc="基于 Quartz 的任务调度管理，支持 cron 表达式、暂停/恢复与立即执行。" table-title="任务列表" :list="jobList" :columns="JOB_COLUMNS" fit-viewport :alt-view="view === 'logs'" :min-width="980">
+  <ListPage ref="pageEl" title="定时任务" desc="基于 Quartz 的任务调度管理，支持 cron 表达式、暂停/恢复与立即执行。" table-title="任务列表" :list="jobList" :columns="JOB_COLUMNS" fit-viewport :alt-view="view === 'logs'" :min-width="980">
     <template #actions>
       <Segmented v-model="view" label="视图" :options="VIEWS" />
       <PermissionButton v-if="view === 'table'" perm="monitor:job:add" variant="primary" icon="plus" @click="openCreate">新增任务</PermissionButton>
