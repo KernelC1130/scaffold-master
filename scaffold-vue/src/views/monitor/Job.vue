@@ -192,6 +192,7 @@ const drawerTitle = computed(() => (editingId.value ? '编辑定时任务' : '�
 </script>
 
 <template>
+  <div class="page-host">
   <ListPage v-if="tab === 'jobs'" title="定时任务" desc="基于 Quartz 的任务调度管理：任务以「bean名.方法名(参数)」形式指向白名单包内的执行入口，支持 cron 表达式、暂停/恢复与立即执行。" table-title="任务列表" :list="jobList" :columns="JOB_COLUMNS" :min-width="980">
     <template #actions>
       <PermissionButton perm="monitor:job:add" variant="secondary" icon="plus" @click="openCreate">新增任务</PermissionButton>
@@ -290,6 +291,7 @@ const drawerTitle = computed(() => (editingId.value ? '编辑定时任务' : '�
       </div>
     </template>
   </Drawer>
+  </div>
 </template>
 
 <style scoped>

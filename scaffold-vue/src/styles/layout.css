@@ -252,7 +252,7 @@
 }
 
 /* 页面入场兜底隐藏 */
-.page:not([data-entrance-ready="true"]) .reveal { opacity: 0; }
+:is(.page, .page-host):not([data-entrance-ready="true"]) .reveal { opacity: 0; }
 
 /* ── 页面头 ─────────────────────────────────────────────────── */
 .page-head {
