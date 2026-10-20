@@ -11,6 +11,42 @@ export interface IdResponse {
   id: number
 }
 
+export interface SysJobRow {
+  jobId: number
+  jobName: string
+  jobGroup: string
+  invokeTarget: string
+  cronExpression: string
+  misfirePolicy: string
+  concurrent: string
+  status: string
+  createTime?: string
+  remark?: string
+}
+
+export interface SysJobPayload {
+  jobId?: number
+  jobName: string
+  jobGroup?: string
+  invokeTarget: string
+  cronExpression: string
+  misfirePolicy?: string
+  concurrent?: string
+  remark?: string
+}
+
+export interface SysJobLogRow {
+  jobLogId: number
+  jobName: string
+  jobGroup: string
+  invokeTarget: string
+  jobMessage: string
+  status: string
+  exceptionInfo?: string
+  startTime?: string
+  endTime?: string
+}
+
 export interface UserRow {
   id: number
   username: string
@@ -229,6 +265,20 @@ export function createSystemApi(client: HttpClient) {
     configs: {
       ...crudPage<Record<string, unknown>, ConfigWriteRequest>(client, '/system/configs'),
       export: (query?: QueryParams) => client.download('/system/configs/export', query),
+    },
+    jobs: {
+      list: (query?: QueryParams) => client.get<PageResult<SysJobRow>>('/monitor/jobs', query),
+      detail: (jobId: number | string) => client.get<SysJobRow>(`/monitor/jobs/${jobId}`),
+      add: (data: SysJobPayload) => client.post<void>('/monitor/jobs', data),
+      edit: (data: SysJobPayload) => client.put<void>('/monitor/jobs', data),
+      remove: (jobIds: string) => client.delete<void>(`/monitor/jobs/${jobIds}`),
+      changeStatus: (jobId: number | string, status: string) => client.put<void>(`/monitor/jobs/${jobId}/change-status?status=${status}`),
+      run: (jobId: number | string) => client.put<void>(`/monitor/jobs/${jobId}/run`),
+      cronCheck: (expression: string) => client.get<boolean>('/monitor/cron-check', { expression }),
+      logs: {
+        list: (query?: QueryParams) => client.get<PageResult<SysJobLogRow>>('/monitor/job-logs', query),
+        clear: () => client.delete<void>('/monitor/job-logs'),
+      },
     },
     operLogs: {
       list: (query?: QueryParams) => client.get<PageResult<Record<string, unknown>>>('/monitor/oper-logs', query),
