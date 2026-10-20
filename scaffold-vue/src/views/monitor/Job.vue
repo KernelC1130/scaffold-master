@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import DataTable, { type Column } from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
+import Panel from '@/components/ui/Panel.vue'
 import { Drawer, Field, Segmented, Select, Tag, TextInput } from '@/components/ui'
 import { ListPage, PermissionButton } from '@/components/business'
 import { systemApi, type SysJobRow, type SysJobLogRow, type SysJobPayload } from '@/api'
@@ -10,7 +11,7 @@ import { confirm } from '@/composables/confirm'
 import { pushToast, toastError } from '@/composables/toast'
 
 /** 视图：table = 任务列表（默认表格视图）；logs = 执行日志（alt 视图，轻量切换无全页动画） */
-const view = ref<'table' | 'logs'>('table')
+const view = ref<'table' | 'logs'>((localStorage.getItem('monitor-job-view') as 'table' | 'logs') || 'table')
 
 /* ---------------- 任务列表 ---------------- */
 
@@ -29,6 +30,8 @@ const JOB_COLUMNS: Column[] = [
   { key: 'createTime', title: '创建时间', width: 168 },
   { key: 'actions', title: '', width: 230, className: 'col-actions' },
 ]
+
+watch(view, v => localStorage.setItem('monitor-job-view', v))
 
 const VIEWS = [
   { label: '任务', value: 'table' },
@@ -246,20 +249,30 @@ async function saveJob() {
 
     <template #alt>
       <div class="logs-view">
-        <DataTable :columns="LOG_COLUMNS" :data="logList.rows.value" :loading="logList.loading.value" :min-width="900" row-key="jobLogId">
-          <template #cell-status="{ row }"><Tag :tone="row.status === '0' ? 'ok' : 'danger'" dot>{{ row.status === '0' ? '成功' : '失败' }}</Tag></template>
-          <template #cell-jobMessage="{ row }">
-            <span class="ellipsis" style="display: inline-block; max-width: 300px">{{ row.jobMessage }}</span>
-            <div v-if="row.exceptionInfo" class="cell-sub" style="color: var(--danger, #d33)">{{ row.exceptionInfo }}</div>
-          </template>
-        </DataTable>
-        <Pagination
-          :total="logList.total.value"
-          :page="logList.page.value"
-          :page-size="logList.pageSize.value"
-          @update:page="logList.setPage($event)"
-          @update:page-size="logList.setPageSize($event)"
-        />
+        <form class="search-form m-surface" role="search" @submit.prevent="logList.search()">
+          <Field label="任务名称" wide>
+            <TextInput v-model="logList.query.jobName" icon="search" placeholder="按任务名称模糊搜索" clearable @enter="logList.search()" />
+          </Field>
+          <Field label="结果">
+            <Select v-model="logList.query.status" :options="LOG_STATUS_OPTIONS" />
+          </Field>
+        </form>
+        <Panel class="list-page-panel" title="执行记录" :meta="`共 ${logList.total.value} 条`">
+          <DataTable :columns="LOG_COLUMNS" :data="logList.rows.value" :loading="logList.loading.value" :min-width="900" row-key="jobLogId">
+            <template #cell-status="{ row }"><Tag :tone="row.status === '0' ? 'ok' : 'danger'" dot>{{ row.status === '0' ? '成功' : '失败' }}</Tag></template>
+            <template #cell-jobMessage="{ row }">
+              <span class="ellipsis" style="display: inline-block; max-width: 300px">{{ row.jobMessage }}</span>
+              <div v-if="row.exceptionInfo" class="cell-sub" style="color: var(--danger, #d33)">{{ row.exceptionInfo }}</div>
+            </template>
+          </DataTable>
+          <Pagination
+            :total="logList.total.value"
+            :page="logList.page.value"
+            :page-size="logList.pageSize.value"
+            @update:page="logList.setPage($event)"
+            @update:page-size="logList.setPageSize($event)"
+          />
+        </Panel>
       </div>
     </template>
   </ListPage>
