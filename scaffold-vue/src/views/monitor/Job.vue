@@ -31,8 +31,6 @@ const JOB_COLUMNS: Column[] = [
   { key: 'actions', title: '', width: 230, className: 'col-actions' },
 ]
 
-watch(view, v => localStorage.setItem('monitor-job-view', v))
-
 const VIEWS = [
   { label: '任务', value: 'table' },
   { label: '执行日志', value: 'logs' },
@@ -84,6 +82,21 @@ interface LogQuery extends Record<string, unknown> { jobName: string; status: st
 const logList = useListPage<SysJobLogRow, LogQuery>({
   query: { jobName: '', status: '' },
   fetch: params => systemApi.jobs.logs.list(params) as Promise<any>,
+  immediate: false,
+})
+
+// 执行日志按需加载：进入页面时只请求任务列表，切到日志视图再拉，
+// 避免两个请求并发让首屏多出一次骨架占位。
+const logLoaded = ref(false)
+function ensureLogLoaded() {
+  if (logLoaded.value) return
+  logLoaded.value = true
+  logList.load()
+}
+
+watch(view, v => {
+  localStorage.setItem('monitor-job-view', v)
+  if (v === 'logs') ensureLogLoaded()
 })
 
 const LOG_COLUMNS: Column[] = [
@@ -128,7 +141,10 @@ const form = reactive<SysJobPayload>({
   remark: '',
 })
 const pageEl = ref<{ $el: HTMLElement } | null>(null)
-onMounted(() => { if (pageEl.value?.$el) pageEl.value.$el.dataset.entranceReady = 'true' })
+onMounted(() => {
+  if (pageEl.value?.$el) pageEl.value.$el.dataset.entranceReady = 'true'
+  if (view.value === 'logs') ensureLogLoaded()
+})
 const cronState = ref<'idle' | 'ok' | 'bad'>('idle')
 
 const MISFIRE_OPTIONS = [
