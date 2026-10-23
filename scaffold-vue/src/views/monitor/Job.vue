@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import DataTable, { type Column } from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import Panel from '@/components/ui/Panel.vue'
@@ -82,22 +82,9 @@ interface LogQuery extends Record<string, unknown> { jobName: string; status: st
 const logList = useListPage<SysJobLogRow, LogQuery>({
   query: { jobName: '', status: '' },
   fetch: params => systemApi.jobs.logs.list(params) as Promise<any>,
-  immediate: false,
 })
 
-// 执行日志按需加载：进入页面时只请求任务列表，切到日志视图再拉，
-// 避免两个请求并发让首屏多出一次骨架占位。
-const logLoaded = ref(false)
-function ensureLogLoaded() {
-  if (logLoaded.value) return
-  logLoaded.value = true
-  logList.load()
-}
-
-watch(view, v => {
-  localStorage.setItem('monitor-job-view', v)
-  if (v === 'logs') ensureLogLoaded()
-})
+watch(view, v => localStorage.setItem('monitor-job-view', v))
 
 const LOG_COLUMNS: Column[] = [
   { key: 'jobLogId', title: '日志ID', width: 80 },
@@ -139,11 +126,6 @@ const form = reactive<SysJobPayload>({
   misfirePolicy: '3',
   concurrent: '1',
   remark: '',
-})
-const pageEl = ref<{ $el: HTMLElement } | null>(null)
-onMounted(() => {
-  if (pageEl.value?.$el) pageEl.value.$el.dataset.entranceReady = 'true'
-  if (view.value === 'logs') ensureLogLoaded()
 })
 const cronState = ref<'idle' | 'ok' | 'bad'>('idle')
 
@@ -213,7 +195,7 @@ async function saveJob() {
 </script>
 
 <template>
-  <ListPage ref="pageEl" title="定时任务" desc="基于 Quartz 的任务调度管理，支持 cron 表达式、暂停/恢复与立即执行。" table-title="任务列表" :list="jobList" :columns="JOB_COLUMNS" fit-viewport alt-fit :alt-view="view === 'logs'" :min-width="980">
+  <ListPage title="定时任务" desc="基于 Quartz 的任务调度管理，支持 cron 表达式、暂停/恢复与立即执行。" table-title="任务列表" :list="jobList" :columns="JOB_COLUMNS" fit-viewport alt-fit :alt-view="view === 'logs'" :min-width="980">
     <template #actions>
       <Segmented v-model="view" label="视图" :options="VIEWS" />
       <PermissionButton v-if="view === 'table'" perm="monitor:job:add" variant="primary" icon="plus" @click="openCreate">新增任务</PermissionButton>
@@ -295,8 +277,6 @@ async function saveJob() {
         </Panel>
       </div>
     </template>
-  </ListPage>
-
   <Drawer :open="drawerOpen" :title="editingId ? '编辑定时任务' : '新增定时任务'" :sub="editingId ? `任务 ID ${editingId}` : '创建后默认为暂停状态'" :width="520" @close="drawerOpen = false">
     <div class="form-stack">
       <Field label="任务名称" required>
@@ -334,6 +314,7 @@ async function saveJob() {
       </div>
     </template>
   </Drawer>
+  </ListPage>
 </template>
 
 <style scoped>
