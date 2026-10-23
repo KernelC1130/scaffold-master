@@ -91,6 +91,12 @@ function setMode(mode: Mode) {
   fields.value[current.value] = { ...state.value, mode }
 }
 
+// 取值方式用平台 Segmented 呈现，读写都落到当前字段的状态上
+const mode = computed({
+  get: () => state.value.mode,
+  set: (value: Mode) => setMode(value),
+})
+
 function setStep(delta: number) {
   const max = fieldDef.value.max
   const next = Math.min(max, Math.max(1, (state.value.step || 1) + delta))
@@ -176,17 +182,10 @@ function confirm() {
     <div class="cron-builder">
       <Segmented v-model="current" label="字段" :options="FIELDS.map(field => ({ label: field.label, value: field.key }))" />
 
-      <div class="cron-panel">
+      <div class="cron-panel m-surface">
         <div class="cron-modes">
-          <button
-            v-for="mode in MODES"
-            :key="mode.value"
-            type="button"
-            class="cron-mode"
-            :class="{ 'is-active': state.mode === mode.value }"
-            @click="setMode(mode.value)"
-          >{{ mode.label }}</button>
-          <span class="cron-hint">{{ fieldDef.min }}–{{ fieldDef.max }}，当前：{{ exprOf(state) }}</span>
+          <Segmented v-model="mode" label="取值方式" :options="MODES" />
+          <span class="cron-hint">范围 {{ fieldDef.min }}–{{ fieldDef.max }}</span>
         </div>
 
         <div v-if="state.mode === 'every'" class="cron-row soft">每{{ fieldDef.label }}（{{ current === 'week' ? '每天' : '*' }}）</div>
@@ -225,7 +224,7 @@ function confirm() {
         </div>
       </div>
 
-      <div class="cron-preview">
+      <div class="cron-preview m-groove">
         <code>{{ cron }}</code>
         <span class="soft">{{ description }}</span>
       </div>
@@ -241,42 +240,65 @@ function confirm() {
 </template>
 
 <style scoped>
-.cron-builder { display: flex; flex-direction: column; gap: 16px; }
+.cron-builder { display: flex; flex-direction: column; gap: 14px; }
+/* 工作区：沿用平台阅读面材质，圆角与 Panel 内层卡片一致 */
 .cron-panel {
-  border: 1px solid var(--line);
   border-radius: var(--r-md);
-  padding: 16px;
-  min-height: 150px;
-  background: var(--card-bg, #fff);
+  padding: 14px 16px;
+  min-height: 148px;
 }
-.cron-modes { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-.cron-mode {
-  height: 28px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--input-bg, #fff);
-  color: var(--ink-muted);
-  font: inherit;
-  font-size: 12.5px;
-  cursor: pointer;
-}
-.cron-mode.is-active { border-color: var(--blue); color: var(--blue); background: color-mix(in srgb, var(--blue) 8%, transparent); }
-.cron-hint { margin-left: auto; font-size: 12px; color: var(--ink-faint); }
-.cron-row { display: flex; align-items: center; gap: 10px; min-height: 38px; font-size: 13px; }
+.cron-modes { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.cron-hint { margin-left: auto; font-size: 11.5px; color: var(--ink-soft); }
+.cron-row { display: flex; align-items: center; gap: 10px; min-height: 36px; font-size: 13px; color: var(--ink); }
+.cron-row.soft { color: var(--ink-soft); }
 .cron-row.is-top { align-items: flex-start; flex-wrap: wrap; }
-.cron-stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; }
-.cron-stepper button { width: 32px; height: 34px; border: 0; background: var(--hover-bg); color: var(--ink); cursor: pointer; font-size: 15px; }
-.cron-stepper span { min-width: 46px; text-align: center; font-variant-numeric: tabular-nums; }
+/* 步进器与输入框同高同圆角，内层按钮只做 hover 底 */
+.cron-stepper {
+  display: inline-flex;
+  align-items: stretch;
+  height: var(--control-h);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--input-bg);
+  box-shadow: var(--edge);
+  overflow: hidden;
+}
+.cron-stepper button {
+  width: 34px;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .2s ease, background .2s ease;
+}
+.cron-stepper button:hover { color: var(--ink); background: var(--hover-bg); }
+.cron-stepper button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.cron-stepper span {
+  min-width: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  border-inline: 1px solid var(--line);
+}
+/* 预览条：凹槽材质，和 Segmented 的槽同一套语言 */
 .cron-preview {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
-  border-radius: var(--r-md);
-  background: var(--hover-bg);
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
   flex-wrap: wrap;
 }
-.cron-preview code { font-size: 13.5px; letter-spacing: .02em; }
-.cron-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.cron-preview code {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 13px;
+  letter-spacing: .02em;
+  color: var(--ink);
+}
+.cron-actions { display: flex; justify-content: flex-end; gap: 8px; }
 </style>
