@@ -3,7 +3,7 @@ import { reactive, ref, watch } from 'vue'
 import DataTable, { type Column } from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import Panel from '@/components/ui/Panel.vue'
-import { Drawer, Field, IconButton, Segmented, Select, Tag, TextInput } from '@/components/ui'
+import { Button, Drawer, Field, IconButton, Segmented, Select, Tag, TextInput } from '@/components/ui'
 import { CronBuilder, ListPage, PermissionButton, SearchForm } from '@/components/business'
 import { systemApi, type SysJobRow, type SysJobLogRow, type SysJobPayload } from '@/api'
 import { useListPage } from '@/composables/list'
@@ -296,8 +296,8 @@ async function saveJob() {
       <Field label="cron 表达式" required>
         <div style="display: flex; gap: 8px; align-items: center">
           <TextInput v-model="form.cronExpression" placeholder="0 0 2 * * ?" style="flex: 1" />
-          <button type="button" class="cron-check" @click="cronOpen = true">向导</button>
-          <button type="button" class="cron-check" @click="checkCron">校验</button>
+          <Button variant="secondary" size="sm" @click="cronOpen = true">向导</Button>
+          <Button variant="secondary" size="sm" @click="checkCron">校验</Button>
         </div>
         <div class="field-hint">
           <Tag v-if="cronState === 'ok'" tone="ok" dot>表达式有效</Tag>
@@ -316,9 +316,9 @@ async function saveJob() {
       </Field>
     </div>
     <template #footer>
-      <div style="display: flex; justify-content: flex-end; gap: 10px">
-        <button type="button" class="drawer-btn-ghost" @click="drawerOpen = false">取消</button>
-        <button type="button" class="drawer-btn-primary" @click="saveJob">保存</button>
+      <div style="display: flex; justify-content: flex-end; gap: 8px">
+        <Button variant="ghost" @click="drawerOpen = false">取消</Button>
+        <Button variant="primary" @click="saveJob">保存</Button>
       </div>
     </template>
   </Drawer>
@@ -348,38 +348,6 @@ async function saveJob() {
   display: flex;
   flex-direction: column;
   gap: 14px;
-}
-.field-hint {
-  margin-top: 5px;
-  font-size: 12px;
-  color: var(--text-sub, #6e7480);
-}
-.cron-check {
-  border: 1px solid var(--hairline, rgba(0, 0, 0, 0.1));
-  background: var(--card-bg, #fff);
-  border-radius: 8px;
-  padding: 7px 14px;
-  font: inherit;
-  font-size: 12.5px;
-  cursor: pointer;
-}
-.drawer-btn-ghost,
-.drawer-btn-primary {
-  border-radius: 9px;
-  padding: 8px 18px;
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-.drawer-btn-ghost {
-  border: 1px solid var(--hairline, rgba(0, 0, 0, 0.1));
-  background: none;
-  color: var(--text, #1a1c20);
-}
-.drawer-btn-primary {
-  border: 0;
-  background: rgb(65, 118, 230);
-  color: #fff;
 }
 .row-actions {
   display: inline-flex;
