@@ -20,21 +20,19 @@ const canSend = hasPermission('system:notice:add')
 const sentList = useListPage<NoticeRow, { keyword: string }>({
   query: { keyword: '' },
   fetch: params => systemApi.notices.sent(params) as Promise<any>,
-  immediate: false,
+  // 与任务页一致：进入页面就预加载，切 tab 时数据已就绪，不出现加载占位
+  immediate: canSend,
 })
-let sentLoaded = false
 
-const view = ref<'mine' | 'sent'>('mine')
+// 视图选择记在本机（与任务页 monitor-job-view 同一做法）；无发通知权限的人固定「通知」
+const savedView = canSend ? localStorage.getItem('system-notice-view') : null
+const view = ref<'mine' | 'sent'>(savedView === 'sent' ? 'sent' : 'mine')
+watch(view, value => localStorage.setItem('system-notice-view', value))
+
 const VIEWS = computed(() => canSend
   ? [{ label: '通知', value: 'mine' }, { label: '发送记录', value: 'sent' }]
   : [{ label: '通知', value: 'mine' }])
 const activeList = computed(() => (view.value === 'sent' ? sentList : list))
-
-watch(view, value => {
-  if (value !== 'sent' || sentLoaded) return
-  sentLoaded = true
-  sentList.load()
-})
 
 const columns: Column[] = [
   { key: 'title', title: '标题', minWidth: 220 },
@@ -145,7 +143,7 @@ async function submit() {
     const count = form.recipientIds?.length ?? 0
     pushToast(count > 0 ? `通知已发送给 ${count} 位用户` : '公告已发送给全员')
     dialog.value = false
-    if (sentLoaded) await sentList.load()
+    await sentList.load()
   } catch (error) {
     toastError(error, '发送失败')
   } finally {
