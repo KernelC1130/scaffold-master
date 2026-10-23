@@ -500,3 +500,4 @@
 - 新增站内通知模块：`sys_notice` + `sys_notice_read` 两表，公告与点对点消息共用 `recipient_id` 可见口径（为空全员，否则仅本人）；后端 `NoticeService`/`NoticeController` 提供我的通知分页、未读数、标记已读、全部已读、发送与删除；前端顶栏新增铃铛（60 秒轮询未读、最近 5 条、全部已读）与「系统管理 → 通知中心」页面，`V8__notice_module.sql` 建表并登记菜单 108 与 `system:notice:add/remove` 权限。
 - 站内通知支持多选接收人：`recipientIds` 按人展开为多条、去重键带接收人；新增 `UserMultiSelect` 组件（弹窗勾选 + 搜索），通知页接收人字段改为多选，留空仍为全员公告。
 - 通知中心新增「发送记录」tab：`GET /api/notices/sent` 返回我发出的通知（含发给别人的），列表联表显示接收人昵称（全员公告显示「全员」）；仅 `system:notice:add` 权限可见该 tab。
+- 通知中心两视图对齐：发送记录补标题搜索栏；「全部已读」在两个 tab 间保留占位（发送记录下禁用），切换视图时右侧分段控件不再横向跳动；`/api/notices/sent` 增加 keyword 标题过滤。

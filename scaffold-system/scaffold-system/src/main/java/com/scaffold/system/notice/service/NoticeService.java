@@ -106,11 +106,12 @@ public class NoticeService {
     }
 
     /** 发送记录：我发出的通知（含发给别人的），按时间倒序 */
-    public PageResult<SysNotice> sent(String operator, int pageNum, int pageSize) {
+    public PageResult<SysNotice> sent(String operator, String keyword, int pageNum, int pageSize) {
         int page = Math.max(1, pageNum);
         int size = Math.min(100, Math.max(1, pageSize));
-        List<SysNotice> rows = noticeMapper.selectSent(operator, (page - 1) * size, size);
-        long total = noticeMapper.countSent(operator);
+        String filter = keyword == null ? "" : keyword.trim();
+        List<SysNotice> rows = noticeMapper.selectSent(operator, filter, (page - 1) * size, size);
+        long total = noticeMapper.countSent(operator, filter);
         return PageResult.of(rows, total, page, size);
     }
 

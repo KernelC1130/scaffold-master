@@ -69,15 +69,22 @@ public interface SysNoticeMapper {
             FROM sys_notice n
             LEFT JOIN sys_user u ON u.id = n.recipient_id
             WHERE n.deleted = 0 AND n.create_by = #{operator}
+            <if test="keyword != null and keyword != ''">AND n.title LIKE CONCAT('%', #{keyword}, '%')</if>
             ORDER BY n.id DESC
             LIMIT #{offset}, #{pageSize}
             </script>
             """)
-    List<SysNotice> selectSent(@Param("operator") String operator, @Param("offset") int offset,
-                               @Param("pageSize") int pageSize);
+    List<SysNotice> selectSent(@Param("operator") String operator, @Param("keyword") String keyword,
+                               @Param("offset") int offset, @Param("pageSize") int pageSize);
 
-    @Select("SELECT COUNT(*) FROM sys_notice n WHERE n.deleted = 0 AND n.create_by = #{operator}")
-    long countSent(@Param("operator") String operator);
+    @Select("""
+            <script>
+            SELECT COUNT(*) FROM sys_notice n
+            WHERE n.deleted = 0 AND n.create_by = #{operator}
+            <if test="keyword != null and keyword != ''">AND n.title LIKE CONCAT('%', #{keyword}, '%')</if>
+            </script>
+            """)
+    long countSent(@Param("operator") String operator, @Param("keyword") String keyword);
 
     @Select("SELECT COUNT(*) FROM sys_notice n WHERE n.dedupe_key = #{dedupeKey} AND n.deleted = 0")
     long countByDedupeKey(@Param("dedupeKey") String dedupeKey);

@@ -17,8 +17,8 @@ const list = useListPage<NoticeRow, { unread: string }>({
 
 /* 发送记录：我发出的通知（含发给别人的），只有发通知权限的人能看 */
 const canSend = hasPermission('system:notice:add')
-const sentList = useListPage<NoticeRow, Record<string, never>>({
-  query: {},
+const sentList = useListPage<NoticeRow, { keyword: string }>({
+  query: { keyword: '' },
   fetch: params => systemApi.notices.sent(params) as Promise<any>,
   immediate: false,
 })
@@ -165,13 +165,17 @@ async function submit() {
   >
     <template #actions>
       <Segmented v-if="canSend" v-model="view" label="视图" :options="VIEWS" />
-      <Button v-if="view === 'mine'" variant="ghost" @click="readAll">全部已读</Button>
+      <!-- 两个视图都保留这个按钮的占位，避免切换时右对齐的分段控件横向跳动 -->
+      <Button variant="ghost" :disabled="view !== 'mine'" @click="readAll">全部已读</Button>
       <PermissionButton v-if="canSend" perm="system:notice:add" variant="primary" icon="plus" @click="openSend">发送通知</PermissionButton>
     </template>
 
-    <template v-if="view === 'mine'" #search>
-      <Field label="状态">
+    <template #search>
+      <Field v-if="view === 'mine'" label="状态">
         <Select v-model="list.query.unread" :options="UNREAD_OPTIONS" />
+      </Field>
+      <Field v-else label="标题" wide>
+        <TextInput v-model="sentList.query.keyword" icon="search" placeholder="按标题模糊搜索" clearable @enter="sentList.search()" />
       </Field>
     </template>
 
