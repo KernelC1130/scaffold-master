@@ -1,17 +1,39 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { Button, Drawer, Field, Select, Tag, TextInput, type Column } from '@/components/ui'
+import { computed, reactive, ref, watch } from 'vue'
+import { Button, Drawer, Field, Segmented, Select, Tag, TextInput, type Column } from '@/components/ui'
 import { FormDialog, ListPage, PermissionButton, UserMultiSelect } from '@/components/business'
 import { systemApi, type NoticeRow, type NoticeSendPayload } from '@/api'
 import { useListPage } from '@/composables/list'
 import { confirm } from '@/composables/confirm'
 import { pushToast, toastError } from '@/composables/toast'
+import { hasPermission } from '@/directives/permission'
 
 /* 通知中心：全员公告与点对点消息共用一套列表；未读筛选走 unreadOnly 参数。 */
 const list = useListPage<NoticeRow, { unread: string }>({
   query: { unread: '0' },
   fetch: params => systemApi.notices.mine(params) as Promise<any>,
   toParams: query => ({ unreadOnly: query.unread === '1' }),
+})
+
+/* 发送记录：我发出的通知（含发给别人的），只有发通知权限的人能看 */
+const canSend = hasPermission('system:notice:add')
+const sentList = useListPage<NoticeRow, Record<string, never>>({
+  query: {},
+  fetch: params => systemApi.notices.sent(params) as Promise<any>,
+  immediate: false,
+})
+let sentLoaded = false
+
+const view = ref<'mine' | 'sent'>('mine')
+const VIEWS = computed(() => canSend
+  ? [{ label: '通知', value: 'mine' }, { label: '发送记录', value: 'sent' }]
+  : [{ label: '通知', value: 'mine' }])
+const activeList = computed(() => (view.value === 'sent' ? sentList : list))
+
+watch(view, value => {
+  if (value !== 'sent' || sentLoaded) return
+  sentLoaded = true
+  sentList.load()
 })
 
 const columns: Column[] = [
@@ -21,6 +43,15 @@ const columns: Column[] = [
   { key: 'createTime', title: '时间', width: 168 },
   { key: 'actions', title: '操作', width: 150, className: 'col-actions' },
 ]
+const sentColumns: Column[] = [
+  { key: 'title', title: '标题', minWidth: 200 },
+  { key: 'category', title: '分类', width: 90 },
+  { key: 'level', title: '级别', width: 90 },
+  { key: 'recipientName', title: '接收人', minWidth: 120 },
+  { key: 'createTime', title: '时间', width: 168 },
+  { key: 'actions', title: '操作', width: 130, className: 'col-actions' },
+]
+const activeColumns = computed(() => (view.value === 'sent' ? sentColumns : columns))
 
 const UNREAD_OPTIONS = [
   { label: '全部通知', value: '0' },
@@ -47,7 +78,8 @@ const detail = ref<NoticeRow | null>(null)
 
 async function openDetail(row: NoticeRow) {
   detail.value = row
-  if (row.readFlag) return
+  // 发送记录是我自己发的，不涉及「读别人的消息」
+  if (view.value === 'sent' || row.readFlag) return
   try {
     await systemApi.notices.read(row.id)
     row.readFlag = 1
@@ -85,7 +117,7 @@ async function remove(row: NoticeRow) {
   try {
     await systemApi.notices.remove(row.id)
     pushToast('通知已删除')
-    await list.load()
+    await activeList.value.load()
   } catch (error) {
     toastError(error, '删除失败')
   }
@@ -113,7 +145,7 @@ async function submit() {
     const count = form.recipientIds?.length ?? 0
     pushToast(count > 0 ? `通知已发送给 ${count} 位用户` : '公告已发送给全员')
     dialog.value = false
-    await list.load()
+    if (sentLoaded) await sentList.load()
   } catch (error) {
     toastError(error, '发送失败')
   } finally {
@@ -123,13 +155,21 @@ async function submit() {
 </script>
 
 <template>
-  <ListPage title="通知中心" desc="全员公告与发给个人的业务提醒共用同一个入口，铃铛按可见范围展示。" table-title="通知列表" :list="list" :columns="columns" fit-viewport>
+  <ListPage
+    title="通知中心"
+    desc="全员公告与发给个人的业务提醒共用同一个入口，铃铛按可见范围展示。"
+    :table-title="view === 'sent' ? '发送记录' : '通知列表'"
+    :list="activeList"
+    :columns="activeColumns"
+    fit-viewport
+  >
     <template #actions>
-      <Button variant="ghost" @click="readAll">全部已读</Button>
-      <PermissionButton perm="system:notice:add" variant="primary" icon="plus" @click="openSend">发送通知</PermissionButton>
+      <Segmented v-if="canSend" v-model="view" label="视图" :options="VIEWS" />
+      <Button v-if="view === 'mine'" variant="ghost" @click="readAll">全部已读</Button>
+      <PermissionButton v-if="canSend" perm="system:notice:add" variant="primary" icon="plus" @click="openSend">发送通知</PermissionButton>
     </template>
 
-    <template #search>
+    <template v-if="view === 'mine'" #search>
       <Field label="状态">
         <Select v-model="list.query.unread" :options="UNREAD_OPTIONS" />
       </Field>
@@ -137,8 +177,8 @@ async function submit() {
 
     <template #cell-title="{ row }">
       <span class="notice-title" @click="openDetail(row)">
-        <span v-if="!row.readFlag" class="unread-dot" aria-hidden="true" />
-        <span :class="!row.readFlag ? 'cell-title' : ''">{{ row.title }}</span>
+        <span v-if="view === 'mine' && !row.readFlag" class="unread-dot" aria-hidden="true" />
+        <span :class="view === 'mine' && !row.readFlag ? 'cell-title' : ''">{{ row.title }}</span>
       </span>
     </template>
     <template #cell-category="{ row }">
@@ -147,11 +187,16 @@ async function submit() {
     <template #cell-level="{ row }">
       <Tag :tone="LEVEL_TONE[row.level] ?? 'neutral'" dot>{{ LEVEL_LABEL[row.level] ?? row.level }}</Tag>
     </template>
+    <template #cell-recipientName="{ row }">
+      <span :class="row.recipientId ? '' : 'soft'">{{ row.recipientName || (row.recipientId ? `用户 ${row.recipientId}` : '全员') }}</span>
+    </template>
     <template #cell-createTime="{ row }"><span class="tnum soft">{{ row.createTime }}</span></template>
     <template #cell-actions="{ row }">
       <div class="row-actions">
         <Button variant="text" size="sm" @click="openDetail(row)">查看</Button>
-        <Button v-if="!row.readFlag" variant="text" size="sm" @click="markRead(row)">已读</Button>
+        <template v-if="view === 'mine'">
+          <Button v-if="!row.readFlag" variant="text" size="sm" @click="markRead(row)">已读</Button>
+        </template>
         <PermissionButton perm="system:notice:remove" variant="text" size="sm" danger @click="remove(row)">删除</PermissionButton>
       </div>
     </template>
@@ -164,7 +209,7 @@ async function submit() {
               <Tag :tone="CATEGORY_TONE[detail.category] ?? 'neutral'">{{ CATEGORY_LABEL[detail.category] ?? '通知' }}</Tag>
               <Tag :tone="LEVEL_TONE[detail.level] ?? 'neutral'" dot>{{ LEVEL_LABEL[detail.level] ?? detail.level }}</Tag>
             </div></div>
-            <div class="kv"><div class="kv-label">范围</div><div class="kv-value">{{ detail.recipientId ? `指定用户（ID ${detail.recipientId}）` : '全员公告' }}</div></div>
+            <div class="kv"><div class="kv-label">范围</div><div class="kv-value">{{ detail.recipientName || (detail.recipientId ? `指定用户（ID ${detail.recipientId}）` : '全员公告') }}</div></div>
             <div class="kv"><div class="kv-label">发送人</div><div class="kv-value">{{ detail.createBy || '—' }}</div></div>
             <div class="kv"><div class="kv-label">时间</div><div class="kv-value tnum">{{ detail.createTime }}</div></div>
           </div>

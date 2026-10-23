@@ -59,6 +59,26 @@ public interface SysNoticeMapper {
             + "WHERE n.id = #{id} AND n.deleted = 0 AND (n.recipient_id IS NULL OR n.recipient_id = #{userId})")
     SysNotice selectVisibleById(@Param("id") Long id, @Param("userId") Long userId);
 
+    /** 发送记录：我发出的全部通知（含发给别人的），带接收人昵称 */
+    @Select("""
+            <script>
+            SELECT
+            """ + COLUMNS + """
+            ,
+                   CASE WHEN n.recipient_id IS NULL THEN '全员' ELSE COALESCE(u.nickname, CONCAT('用户 ', n.recipient_id)) END AS recipientName
+            FROM sys_notice n
+            LEFT JOIN sys_user u ON u.id = n.recipient_id
+            WHERE n.deleted = 0 AND n.create_by = #{operator}
+            ORDER BY n.id DESC
+            LIMIT #{offset}, #{pageSize}
+            </script>
+            """)
+    List<SysNotice> selectSent(@Param("operator") String operator, @Param("offset") int offset,
+                               @Param("pageSize") int pageSize);
+
+    @Select("SELECT COUNT(*) FROM sys_notice n WHERE n.deleted = 0 AND n.create_by = #{operator}")
+    long countSent(@Param("operator") String operator);
+
     @Select("SELECT COUNT(*) FROM sys_notice n WHERE n.dedupe_key = #{dedupeKey} AND n.deleted = 0")
     long countByDedupeKey(@Param("dedupeKey") String dedupeKey);
 

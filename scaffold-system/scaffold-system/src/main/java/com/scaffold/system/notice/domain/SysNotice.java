@@ -23,6 +23,8 @@ public class SysNotice {
     private String dedupeKey;
     /** 当前用户是否已读（查询时联表得出，不落库） */
     private Boolean readFlag;
+    /** 接收人昵称；空接收人显示为「全员」（发送记录查询时联表得出） */
+    private String recipientName;
     private String createBy;
     /** yyyy-MM-dd HH:mm，查询时由 SQL 格式化，与其余列表页口径一致 */
     private String createTime;
@@ -50,6 +52,8 @@ public class SysNotice {
     public void setDedupeKey(String dedupeKey) { this.dedupeKey = dedupeKey; }
     public Boolean getReadFlag() { return readFlag; }
     public void setReadFlag(Boolean readFlag) { this.readFlag = readFlag; }
+    public String getRecipientName() { return recipientName; }
+    public void setRecipientName(String recipientName) { this.recipientName = recipientName; }
     public String getCreateBy() { return createBy; }
     public void setCreateBy(String createBy) { this.createBy = createBy; }
     public String getCreateTime() { return createTime; }

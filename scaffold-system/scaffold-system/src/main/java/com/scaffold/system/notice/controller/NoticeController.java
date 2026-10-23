@@ -45,6 +45,13 @@ public class NoticeController {
                 unreadOnly, query.normalizedPageNum(), query.normalizedPageSize()));
     }
 
+    /** 发送记录：我发出的通知（含发给别人的） */
+    @GetMapping("/sent")
+    @RequiresPermission("system:notice:add")
+    public R<PageResult<SysNotice>> sent(PageQuery query) {
+        return R.success(noticeService.sent(currentUsername(), query.normalizedPageNum(), query.normalizedPageSize()));
+    }
+
     /** 铃铛角标：未读数 */
     @GetMapping("/unread-count")
     public R<Map<String, Long>> unreadCount() {

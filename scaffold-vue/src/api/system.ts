@@ -24,6 +24,8 @@ export interface NoticeRow {
   bizType?: string
   bizId?: string
   readFlag?: boolean | number
+  /** 接收人昵称；全员公告为「全员」 */
+  recipientName?: string
   createBy?: string
   createTime?: string
 }
@@ -308,6 +310,7 @@ export function createSystemApi(client: HttpClient) {
     },
     notices: {
       mine: (query?: QueryParams) => client.get<PageResult<NoticeRow>>('/notices/mine', query),
+      sent: (query?: QueryParams) => client.get<PageResult<NoticeRow>>('/notices/sent', query),
       unreadCount: () => client.get<{ count: number }>('/notices/unread-count'),
       read: (id: number | string) => client.put<void>(`/notices/${id}/read`),
       readAll: () => client.put<void>('/notices/read-all'),
