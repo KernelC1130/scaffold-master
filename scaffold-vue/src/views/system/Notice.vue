@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { Button, Drawer, Field, Segmented, Select, Tag, TextInput, type Column } from '@/components/ui'
-import { FormDialog, ListPage, PermissionButton, UserMultiSelect } from '@/components/business'
+import { DictTag, FormDialog, ListPage, PermissionButton, UserMultiSelect } from '@/components/business'
 import { systemApi, type NoticeRow, type NoticeSendPayload } from '@/api'
 import { useListPage } from '@/composables/list'
 import { confirm } from '@/composables/confirm'
@@ -38,6 +38,7 @@ const columns: Column[] = [
   { key: 'title', title: '标题', minWidth: 220 },
   { key: 'category', title: '分类', width: 90 },
   { key: 'level', title: '级别', width: 90 },
+  { key: 'readStatus', title: '状态', width: 90 },
   { key: 'createTime', title: '时间', width: 168 },
   { key: 'actions', title: '操作', width: 150, className: 'col-actions' },
 ]
@@ -191,6 +192,9 @@ async function submit() {
     </template>
     <template #cell-recipientName="{ row }">
       <span :class="row.recipientId ? '' : 'soft'">{{ row.recipientName || (row.recipientId ? `用户 ${row.recipientId}` : '全员') }}</span>
+    </template>
+    <template #cell-readStatus="{ row }">
+      <DictTag type="notice_read_status" :value="row.readFlag ? '1' : '0'" />
     </template>
     <template #cell-createTime="{ row }"><span class="tnum soft">{{ row.createTime }}</span></template>
     <template #cell-actions="{ row }">

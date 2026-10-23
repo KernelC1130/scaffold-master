@@ -502,3 +502,4 @@
 - 通知中心新增「发送记录」tab：`GET /api/notices/sent` 返回我发出的通知（含发给别人的），列表联表显示接收人昵称（全员公告显示「全员」）；仅 `system:notice:add` 权限可见该 tab。
 - 通知中心两视图对齐：发送记录补标题搜索栏；「全部已读」在两个 tab 间保留占位（发送记录下禁用），切换视图时右侧分段控件不再横向跳动；`/api/notices/sent` 增加 keyword 标题过滤。
 - 通知中心记住上次查看的 tab（localStorage `system-notice-view`）；发送记录改为进入页面预加载，切换视图不再出现骨架占位。
+- 通知列表新增「状态」列，使用字典 `notice_read_status`（未读 info / 已读 neutral）渲染；只出现在「通知」视图，发送记录不显示该列。

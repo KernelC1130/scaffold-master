@@ -43,3 +43,12 @@ SELECT r.id, 108 FROM sys_role r;
 
 INSERT IGNORE INTO sys_role_menu (role_id, menu_id)
 SELECT 1, id FROM sys_menu WHERE parent_id = 108;
+
+-- 字典：通知阅读状态（未读 / 已读），供通知列表的状态列使用
+INSERT IGNORE INTO sys_dict_type (id, dict_name, dict_type, status, remark, create_by, update_by)
+VALUES (15, '通知阅读状态', 'notice_read_status', 1, '站内通知的未读 / 已读', 'system', 'system');
+
+INSERT IGNORE INTO sys_dict_data (id, dict_type, dict_label, dict_value, sort, status, tone, is_default, create_by, update_by)
+VALUES
+    (901, 'notice_read_status', '未读', '0', 1, 1, 'info', 1, 'system', 'system'),
+    (902, 'notice_read_status', '已读', '1', 2, 1, 'neutral', 0, 'system', 'system');
