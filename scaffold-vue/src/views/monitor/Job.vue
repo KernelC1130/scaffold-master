@@ -4,7 +4,7 @@ import DataTable, { type Column } from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import Panel from '@/components/ui/Panel.vue'
 import { Drawer, Field, IconButton, Segmented, Select, Tag, TextInput } from '@/components/ui'
-import { ListPage, PermissionButton, SearchForm } from '@/components/business'
+import { CronBuilder, ListPage, PermissionButton, SearchForm } from '@/components/business'
 import { systemApi, type SysJobRow, type SysJobLogRow, type SysJobPayload } from '@/api'
 import { useListPage } from '@/composables/list'
 import { confirm } from '@/composables/confirm'
@@ -173,6 +173,13 @@ async function checkCron() {
   }
 }
 
+const cronOpen = ref(false)
+function applyCron(value: string) {
+  form.cronExpression = value
+  cronOpen.value = false
+  checkCron()
+}
+
 async function saveJob() {
   if (!form.jobName || !form.invokeTarget || !form.cronExpression) {
     pushToast('任务名称、调用目标、cron 表达式均必填')
@@ -289,6 +296,7 @@ async function saveJob() {
       <Field label="cron 表达式" required>
         <div style="display: flex; gap: 8px; align-items: center">
           <TextInput v-model="form.cronExpression" placeholder="0 0 2 * * ?" style="flex: 1" />
+          <button type="button" class="cron-check" @click="cronOpen = true">向导</button>
           <button type="button" class="cron-check" @click="checkCron">校验</button>
         </div>
         <div class="field-hint">
@@ -314,6 +322,7 @@ async function saveJob() {
       </div>
     </template>
   </Drawer>
+  <CronBuilder :open="cronOpen" :value="form.cronExpression" @close="cronOpen = false" @confirm="applyCron" />
   </ListPage>
 </template>
 
