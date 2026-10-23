@@ -7,6 +7,7 @@ import com.scaffold.system.notice.domain.dto.NoticeSendRequest;
 import com.scaffold.system.notice.mapper.SysNoticeMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,15 +35,41 @@ public class NoticeService {
         if (title.length() > 120) throw new BusinessException("通知标题不能超过 120 字");
         if (content.length() > 2000) throw new BusinessException("通知内容不能超过 2000 字");
         String dedupeKey = trim(request.getDedupeKey());
-        if (!dedupeKey.isEmpty() && noticeMapper.countByDedupeKey(dedupeKey) > 0) {
-            return null;
+
+        // 接收人：recipientIds 优先；为空再看单个 recipientId；都为空 = 全员公告
+        List<Long> recipients = new ArrayList<>();
+        if (request.getRecipientIds() != null && !request.getRecipientIds().isEmpty()) {
+            for (Long id : request.getRecipientIds()) {
+                if (id != null && !recipients.contains(id)) recipients.add(id);
+            }
+        } else if (request.getRecipientId() != null) {
+            recipients.add(request.getRecipientId());
         }
+
+        Long firstId = null;
+        if (recipients.isEmpty()) {
+            if (!dedupeKey.isEmpty() && noticeMapper.countByDedupeKey(dedupeKey) > 0) return null;
+            firstId = insert(title, content, request, null, dedupeKey, operator);
+        } else {
+            for (Long recipientId : recipients) {
+                // 多人时按人展开，去重键带上接收人，避免一个人收到后其他人被挡掉
+                String key = dedupeKey.isEmpty() ? "" : dedupeKey + ":u" + recipientId;
+                if (!key.isEmpty() && noticeMapper.countByDedupeKey(key) > 0) continue;
+                Long id = insert(title, content, request, recipientId, key, operator);
+                if (firstId == null) firstId = id;
+            }
+        }
+        return firstId;
+    }
+
+    private Long insert(String title, String content, NoticeSendRequest request, Long recipientId,
+                        String dedupeKey, String operator) {
         SysNotice notice = new SysNotice();
         notice.setTitle(title);
         notice.setContent(content);
         notice.setCategory(normalizeCategory(request.getCategory()));
         notice.setLevel(normalizeLevel(request.getLevel()));
-        notice.setRecipientId(request.getRecipientId());
+        notice.setRecipientId(recipientId);
         notice.setBizType(trim(request.getBizType()));
         notice.setBizId(trim(request.getBizId()));
         notice.setDedupeKey(dedupeKey.isEmpty() ? null : dedupeKey);

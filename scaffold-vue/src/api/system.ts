@@ -33,7 +33,8 @@ export interface NoticeSendPayload {
   content: string
   category?: string
   level?: string
-  recipientId?: number | null
+  /** 接收人；为空或空数组表示全员公告 */
+  recipientIds?: number[]
 }
 
 export interface SysJobRow {

@@ -12,7 +12,10 @@ public class NoticeSendRequest {
     private String category;
     /** 级别：info、warn、danger */
     private String level;
+    /** 单个接收人（兼容字段） */
     private Long recipientId;
+    /** 多个接收人；与 recipientId 同时存在时以本字段为准，空表示全员 */
+    private java.util.List<Long> recipientIds;
     private String bizType;
     private String bizId;
     private String dedupeKey;
@@ -27,6 +30,8 @@ public class NoticeSendRequest {
     public void setLevel(String level) { this.level = level; }
     public Long getRecipientId() { return recipientId; }
     public void setRecipientId(Long recipientId) { this.recipientId = recipientId; }
+    public java.util.List<Long> getRecipientIds() { return recipientIds; }
+    public void setRecipientIds(java.util.List<Long> recipientIds) { this.recipientIds = recipientIds; }
     public String getBizType() { return bizType; }
     public void setBizType(String bizType) { this.bizType = bizType; }
     public String getBizId() { return bizId; }

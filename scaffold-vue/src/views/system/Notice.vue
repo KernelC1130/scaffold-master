@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { Button, Drawer, Field, Select, Tag, TextInput, type Column } from '@/components/ui'
-import { FormDialog, ListPage, PermissionButton, UserSelect } from '@/components/business'
+import { FormDialog, ListPage, PermissionButton, UserMultiSelect } from '@/components/business'
 import { systemApi, type NoticeRow, type NoticeSendPayload } from '@/api'
 import { useListPage } from '@/composables/list'
 import { confirm } from '@/composables/confirm'
@@ -92,7 +92,7 @@ async function remove(row: NoticeRow) {
 }
 
 /* ── 发送通知 ── */
-const emptyForm = (): NoticeSendPayload => ({ title: '', content: '', category: 'notice', level: 'info', recipientId: null })
+const emptyForm = (): NoticeSendPayload => ({ title: '', content: '', category: 'notice', level: 'info', recipientIds: [] })
 const dialog = ref(false)
 const saving = ref(false)
 const form = reactive<NoticeSendPayload>(emptyForm())
@@ -110,7 +110,8 @@ async function submit() {
   saving.value = true
   try {
     await systemApi.notices.send({ ...form, title: form.title.trim(), content: form.content.trim() })
-    pushToast(form.recipientId ? '通知已发送给指定用户' : '公告已发送给全员')
+    const count = form.recipientIds?.length ?? 0
+    pushToast(count > 0 ? `通知已发送给 ${count} 位用户` : '公告已发送给全员')
     dialog.value = false
     await list.load()
   } catch (error) {
@@ -185,8 +186,8 @@ async function submit() {
       <Field label="级别">
         <Select v-model="form.level" :options="LEVEL_OPTIONS" />
       </Field>
-      <Field label="接收人" span hint="留空表示全员公告">
-        <UserSelect v-model="form.recipientId" placeholder="留空 = 全员公告" />
+      <Field label="接收人" span hint="可多选；不选任何人表示全员公告">
+        <UserMultiSelect v-model="form.recipientIds" placeholder="未指定 = 全员公告" />
       </Field>
     </FormDialog>
   </ListPage>
