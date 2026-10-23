@@ -180,7 +180,7 @@ async function submit() {
     <template #cell-title="{ row }">
       <span class="notice-title" @click="openDetail(row)">
         <span v-if="view === 'mine' && !row.readFlag" class="unread-dot" aria-hidden="true" />
-        <span :class="view === 'mine' && !row.readFlag ? 'cell-title' : ''">{{ row.title }}</span>
+        <span class="cell-title">{{ row.title }}</span>
       </span>
     </template>
     <template #cell-category="{ row }">
