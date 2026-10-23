@@ -495,3 +495,5 @@
 - 新增 `scaffold-vue/src/api/portal.ts` 和 API 映射测试，将工作台、工作流、代码生成器页面从前端 Mock 切换为真实接口。
 - 新增 `docs/backend-architecture.md`，说明后端 Maven 模块、包类类型、业务边界和主要字段中文含义。
 - 完成验证：`npm run test:api` 通过 8 个前端 API 测试，`npm run build` 通过，`mvn -pl scaffold-admin -am test` 通过 21 个后端测试，并完成真实后端与 Vite `/api` 代理接口联调。
+- 修复定时任务页「任务 / 执行日志」双视图切换时查询区高度跳动：执行日志视图改回复用 `SearchForm` 组件，外层间距由 14px 对齐到 16px，两视图面板顶部现在一致；执行日志的任务名称列补 `cell-title`，与其余列表的名称列加粗口径统一。
+- 修复列表滚动位置被原地更新重置的问题：`DataTable` 只在 rowKey 序列变化（查询、翻页、换数据）时回到首行，切换显示开关等原地修改不再把滚动条打回顶部。

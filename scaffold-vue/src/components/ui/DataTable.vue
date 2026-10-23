@@ -98,15 +98,18 @@ function collapseAll() { expanded.value = new Set() }
 let initialized = false
 let lastSignature = ''
 watch(() => props.data, (rows) => {
+  // 先按 rowKey 序列判断是不是同一批行：原地更新（如切换显示开关）时
+  // 数组引用可能被替换，但行本身没变，不能把滚动条打回顶部。
+  const signature = rows.map(row => row[props.rowKey]).join(',')
+  const sameRows = signature === lastSignature
   // 查询、翻页、刷新后的新结果从首行展示，保留横向阅读位置。
-  if (props.scrollable && viewport.value) viewport.value.scrollTop = 0
+  if (!sameRows && props.scrollable && viewport.value) viewport.value.scrollTop = 0
   if (props.tree && !initialized && rows.length) {
     expanded.value = collectKeys(rows, props.expandDepth)
     initialized = true
   }
   // 换了一批数据才按阅读序显现；原地修改（如切换开关）不重播
-  const signature = rows.map(row => row[props.rowKey]).join(',')
-  if (signature === lastSignature) return
+  if (sameRows) return
   lastSignature = signature
   nextTick(() => { if (body.value) revealRows(body.value.querySelectorAll('tr.data-row')) })
 }, { immediate: true })

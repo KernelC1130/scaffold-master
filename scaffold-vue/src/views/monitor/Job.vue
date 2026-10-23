@@ -4,7 +4,7 @@ import DataTable, { type Column } from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import Panel from '@/components/ui/Panel.vue'
 import { Drawer, Field, IconButton, Segmented, Select, Tag, TextInput } from '@/components/ui'
-import { ListPage, PermissionButton } from '@/components/business'
+import { ListPage, PermissionButton, SearchForm } from '@/components/business'
 import { systemApi, type SysJobRow, type SysJobLogRow, type SysJobPayload } from '@/api'
 import { useListPage } from '@/composables/list'
 import { confirm } from '@/composables/confirm'
@@ -249,19 +249,20 @@ async function saveJob() {
 
     <template #alt>
       <div class="logs-view">
-        <form class="search-form m-surface" role="search" @submit.prevent="logList.search()">
+        <SearchForm :loading="logList.loading.value" @search="logList.search()" @reset="logList.reset()">
           <Field label="任务名称" wide>
             <TextInput v-model="logList.query.jobName" icon="search" placeholder="按任务名称模糊搜索" clearable @enter="logList.search()" />
           </Field>
           <Field label="结果">
             <Select v-model="logList.query.status" :options="LOG_STATUS_OPTIONS" />
           </Field>
-        </form>
+        </SearchForm>
         <Panel class="list-page-panel" title="执行记录" :meta="`共 ${logList.total.value} 条`">
           <template #tools>
             <IconButton name="refresh" label="刷新" bordered @click="logList.load()" />
           </template>
           <DataTable :columns="LOG_COLUMNS" :data="logList.rows.value" :loading="logList.loading.value" :min-width="900" row-key="jobLogId">
+            <template #cell-jobName="{ row }"><span class="cell-title">{{ row.jobName }}</span></template>
             <template #cell-status="{ row }"><Tag :tone="row.status === '0' ? 'ok' : 'danger'" dot>{{ row.status === '0' ? '成功' : '失败' }}</Tag></template>
             <template #cell-jobMessage="{ row }">
               <span class="ellipsis" style="display: inline-block; max-width: 300px">{{ row.jobMessage }}</span>
@@ -325,7 +326,7 @@ async function saveJob() {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 .logs-view > .list-page-panel {
   flex: 1;
