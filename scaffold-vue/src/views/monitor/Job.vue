@@ -290,7 +290,7 @@ async function saveJob() {
         <TextInput v-model="form.jobName" placeholder="如：AI对话清理（90天前）" />
       </Field>
       <Field label="调用目标" required>
-        <TextInput v-model="form.invokeTarget" placeholder="jobTasks.aiChatClean" />
+        <TextInput v-model="form.invokeTarget" placeholder="sampleTask.heartbeat" />
         <div class="field-hint">格式：bean名.方法名(参数)，仅允许白名单包内的入口</div>
       </Field>
       <Field label="cron 表达式" required>
@@ -299,7 +299,8 @@ async function saveJob() {
           <Button variant="secondary" size="sm" @click="cronOpen = true">向导</Button>
           <Button variant="secondary" size="sm" @click="checkCron">校验</Button>
         </div>
-        <div class="field-hint">
+        <!-- 固定高度的提示行：校验结果（Tag）与示例文字同高，切换时不顶开下方内容 -->
+        <div class="field-hint cron-hint">
           <Tag v-if="cronState === 'ok'" tone="ok" dot>表达式有效</Tag>
           <Tag v-else-if="cronState === 'bad'" tone="danger" dot>表达式无效</Tag>
           <span v-else class="soft">每天 02:00 示例：0 0 2 * * ?</span>
@@ -352,5 +353,13 @@ async function saveJob() {
 .row-actions {
   display: inline-flex;
   gap: 4px;
+}
+/* 与 Tag 同高（22px）：示例文字和校验结果占用同一行高，状态切换不引起布局跳动 */
+.cron-hint {
+  min-height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
 }
 </style>
