@@ -37,6 +37,9 @@ VALUES
     (1081, 108, '发送通知', 'btn', '', '', '', 'system:notice:add', 1, 1, 1, 'system', 'system'),
     (1082, 108, '删除通知', 'btn', '', '', '', 'system:notice:remove', 2, 1, 1, 'system', 'system');
 
--- 已有角色都能看到通知页（页面本身无权限位，按钮权限单独授予）
+-- 所有角色都能看到通知页（页面本身无权限位）；发送/删除按钮只授予超级管理员
 INSERT IGNORE INTO sys_role_menu (role_id, menu_id)
-SELECT r.id, m.id FROM sys_role r JOIN sys_menu m ON m.id = 108 OR m.parent_id = 108;
+SELECT r.id, 108 FROM sys_role r;
+
+INSERT IGNORE INTO sys_role_menu (role_id, menu_id)
+SELECT 1, id FROM sys_menu WHERE parent_id = 108;
