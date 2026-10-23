@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -113,6 +114,29 @@ public interface VulnRepairTaskMapper {
             WHERE t.id = #{id}
             """)
     VulnRepairTaskRow selectTaskById(@Param("id") Long id);
+
+    /** 到期提醒扫描：未完成工单（0待处理/1处理中）且计划完成日早于上限的，带漏洞与资产展示字段。 */
+    @Select("""
+            SELECT t.id,
+                   t.vuln_id,
+                   t.handler_id,
+                   t.task_status,
+                   DATE(t.plan_time) AS plan_time,
+                   v.vuln_title,
+                   a.asset_name,
+                   a.asset_ip,
+                   uh.nickname AS handlerName
+            FROM vuln_repair_task t
+                     LEFT JOIN vuln_vulnerability v ON t.vuln_id = v.id
+                     LEFT JOIN vuln_asset a ON v.asset_id = a.id
+                     LEFT JOIN sys_user uh ON t.handler_id = uh.id AND uh.deleted = 0
+            WHERE t.task_status IN ('0', '1')
+              AND t.handler_id IS NOT NULL
+              AND t.plan_time IS NOT NULL
+              AND t.plan_time < #{limit}
+            ORDER BY t.plan_time ASC, t.id ASC
+            """)
+    List<VulnRepairTaskRow> selectRemindTasks(@Param("limit") LocalDate limit);
 
     @Insert("""
             INSERT INTO vuln_repair_task (vuln_id, handler_id, task_status, priority, progress_desc, plan_time, remark, create_by, update_by)
