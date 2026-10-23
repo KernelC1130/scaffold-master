@@ -6,6 +6,7 @@ import IconButton from '@/components/ui/IconButton.vue'
 import Avatar from '@/components/ui/Avatar.vue'
 import { currentUser } from '@/composables/auth'
 import { overlayEnter, overlayLeave } from '@/composables/motion'
+import NoticeBell from './NoticeBell.vue'
 
 const emit = defineEmits<{
   (e: 'toggle-rail'): void
@@ -83,6 +84,7 @@ onBeforeUnmount(() => closeMenu())
       <span class="cmd-text">搜索菜单</span>
       <span class="kbd">{{ isMac ? '⌘' : 'Ctrl' }} K</span>
     </button>
+    <NoticeBell />
     <IconButton name="contrast" label="外观设置" @click="emit('appearance')" />
     <button
       ref="chip"

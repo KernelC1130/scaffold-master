@@ -11,6 +11,31 @@ export interface IdResponse {
   id: number
 }
 
+export interface NoticeRow {
+  id: number
+  title: string
+  content: string
+  /** 分类：notice 公告、alert 告警、task 待办提醒 */
+  category: string
+  /** 级别：info、warn、danger */
+  level: string
+  /** 接收人；为空表示全员公告 */
+  recipientId?: number | null
+  bizType?: string
+  bizId?: string
+  readFlag?: boolean | number
+  createBy?: string
+  createTime?: string
+}
+
+export interface NoticeSendPayload {
+  title: string
+  content: string
+  category?: string
+  level?: string
+  recipientId?: number | null
+}
+
 export interface SysJobRow {
   jobId: number
   jobName: string
@@ -279,6 +304,14 @@ export function createSystemApi(client: HttpClient) {
         list: (query?: QueryParams) => client.get<PageResult<SysJobLogRow>>('/monitor/job-logs', query),
         clear: () => client.delete<void>('/monitor/job-logs'),
       },
+    },
+    notices: {
+      mine: (query?: QueryParams) => client.get<PageResult<NoticeRow>>('/notices/mine', query),
+      unreadCount: () => client.get<{ count: number }>('/notices/unread-count'),
+      read: (id: number | string) => client.put<void>(`/notices/${id}/read`),
+      readAll: () => client.put<void>('/notices/read-all'),
+      send: (data: NoticeSendPayload) => client.post<number>('/notices', data),
+      remove: (id: number | string) => client.delete<void>(`/notices/${id}`),
     },
     operLogs: {
       list: (query?: QueryParams) => client.get<PageResult<Record<string, unknown>>>('/monitor/oper-logs', query),

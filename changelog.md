@@ -497,3 +497,4 @@
 - 完成验证：`npm run test:api` 通过 8 个前端 API 测试，`npm run build` 通过，`mvn -pl scaffold-admin -am test` 通过 21 个后端测试，并完成真实后端与 Vite `/api` 代理接口联调。
 - 修复定时任务页「任务 / 执行日志」双视图切换时查询区高度跳动：执行日志视图改回复用 `SearchForm` 组件，外层间距由 14px 对齐到 16px，两视图面板顶部现在一致；执行日志的任务名称列补 `cell-title`，与其余列表的名称列加粗口径统一。
 - 修复列表滚动位置被原地更新重置的问题：`DataTable` 只在 rowKey 序列变化（查询、翻页、换数据）时回到首行，切换显示开关等原地修改不再把滚动条打回顶部。
+- 新增站内通知模块：`sys_notice` + `sys_notice_read` 两表，公告与点对点消息共用 `recipient_id` 可见口径（为空全员，否则仅本人）；后端 `NoticeService`/`NoticeController` 提供我的通知分页、未读数、标记已读、全部已读、发送与删除；前端顶栏新增铃铛（60 秒轮询未读、最近 5 条、全部已读）与「系统管理 → 通知中心」页面，`V8__notice_module.sql` 建表并登记菜单 108 与 `system:notice:add/remove` 权限。

@@ -8,6 +8,7 @@ import org.mybatis.spring.annotation.MapperScan;
 @MapperScan({
         "com.scaffold.system.mapper",
         "com.scaffold.system.job.mapper",
+        "com.scaffold.system.notice.mapper",
         "com.scaffold.generator.mapper",
         "com.scaffold.vuln.mapper"
 })
