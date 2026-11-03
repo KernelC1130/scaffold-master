@@ -266,7 +266,7 @@ async function saveJob() {
           <template #tools>
             <IconButton name="refresh" label="刷新" bordered @click="logList.load()" />
           </template>
-          <DataTable :columns="LOG_COLUMNS" :data="logList.rows.value" :loading="logList.loading.value" :min-width="900" row-key="jobLogId">
+          <DataTable :columns="LOG_COLUMNS" :data="logList.rows.value" :loading="logList.loading.value" :min-width="900" row-key="jobLogId" scrollable>
             <template #cell-jobName="{ row }"><span class="cell-title">{{ row.jobName }}</span></template>
             <template #cell-status="{ row }"><Tag :tone="row.status === '0' ? 'ok' : 'danger'" dot>{{ row.status === '0' ? '成功' : '失败' }}</Tag></template>
             <template #cell-jobMessage="{ row }">

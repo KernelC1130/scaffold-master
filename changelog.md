@@ -504,3 +504,4 @@
 - 通知中心记住上次查看的 tab（localStorage `system-notice-view`）；发送记录改为进入页面预加载，切换视图不再出现骨架占位。
 - 通知列表新增「状态」列，使用字典 `notice_read_status`（未读 info / 已读 neutral）渲染；只出现在「通知」视图，发送记录不显示该列。
 - 新增定时任务「工单到期提醒」：`jobTasks.scanRepairTasks()` 每天 09:00 扫描未完成工单，计划完成日已过或 3 天内到期的给负责人发站内信（同一工单同一档按天去重）；新增 `V9__repair_task_remind_job.sql` 写入 sys_job 记录。
+- 修复定时任务「执行日志」视图表格不滚动、面板撑出视口的问题：alt 视图里的 `DataTable` 漏传 `scrollable`，`.table-wrap` 退回 `overflow-y: clip` 且缺少 `min-height: 0`，表格按内容高度撑开把分页条顶出视口（表现为「翻页固定了、数据在外面滚」）；补上 `scrollable` 后表格在面板内独立滚动、分页条固定在其下方。Playwright 实测：传前 clientHeight 1920 / overflow clip 不可滚，传后 clientHeight 281 / scrollHeight 1920 / overflow auto 可滚。
